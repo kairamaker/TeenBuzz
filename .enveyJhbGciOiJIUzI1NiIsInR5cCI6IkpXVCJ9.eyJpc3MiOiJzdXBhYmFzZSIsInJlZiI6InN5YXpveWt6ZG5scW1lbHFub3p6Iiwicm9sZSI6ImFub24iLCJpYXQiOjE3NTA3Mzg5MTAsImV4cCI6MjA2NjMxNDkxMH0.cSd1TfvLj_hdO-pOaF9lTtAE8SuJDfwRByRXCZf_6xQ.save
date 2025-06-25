@@ -1,0 +1,5 @@
+SUPABASE_URL=https://syazoykzdnlqmelqnozz.supabase.co
+SUPABASE_KEY=your_actual_anon_key_here
+PERPLEXITY_API_KEY=your_perplexity_api_key_here
+FLASK_ENV=development
+FLASK_DEBUG=Tru

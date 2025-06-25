@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.headline }} - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        <h1>TeenBuzz</h1>
+                        <span class="tagline">News That Matters</span>
+                    </a>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('home') }}#categories" class="nav-link">Categories</a>
+                    <a href="{{ url_for('admin_panel') }}" class="btn-primary">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <main class="article-page">
+        <div class="container">
+            <article class="article-full">
+                <header class="article-header">
+                    <div class="breadcrumb">
+                        <a href="{{ url_for('home') }}">Home</a> &gt; 
+                        <a href="{{ url_for('category_articles', category=article.category) }}">{{ article.category }}</a> &gt;
+                        <span>Article</span>
+                    </div>
+                    
+                    <div class="article-meta">
+                        <span class="article-category">{{ article.category }}</span>
+                        <span class="article-date">{{ article.created_at[:10] }}</span>
+                        <span class="article-source">Source: {{ article.source }}</span>
+                        {% if article.original_url %}
+                        <span class="article-original">
+                            <a href="{{ article.original_url }}" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt"></i> Read Original
+                            </a>
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1>{{ article.headline }}</h1>
+                </header>
+
+                <div class="article-image-full">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+
+                <div class="article-body">
+                    <div class="article-content">
+                        {{ article.content | replace('\n', '<br>') | safe }}
+                    </div>
+
+                    {% if article.relevance %}
+                    <div class="article-relevance">
+                        <h3><i class="fas fa-lightbulb"></i> Why This Matters to You:</h3>
+                        <p>{{ article.relevance }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="article-actions">
+                        <a href="{{ url_for('category_articles', category=article.category) }}" class="btn-secondary">
+                            <i class="fas fa-arrow-left"></i> More {{ article.category }} News
+                        </a>
+                        <a href="{{ url_for('home') }}" class="btn-primary">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeenBuzz</h4>
+                    <p>Making news accessible and engaging for teenagers worldwide.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="{{ url_for('home') }}">Home</a>
+                    <a href="{{ url_for('home') }}#categories">Categories</a>
+                    <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <p>Built during summer internship 2025</p>
+                    <p>Pure Python Backend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

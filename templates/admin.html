@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        <h1>TeenBuzz</h1>
+                        <span class="tagline">Admin Panel</span>
+                    </a>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('test_supabase') }}" class="btn-secondary">Test Database</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Panel Content -->
+    <main class="admin-main">
+        <div class="container">
+            <section class="admin-section">
+                <h2><i class="fas fa-plus-circle"></i> Fetch New Articles</h2>
+                <p>Use Perplexity AI to fetch and rewrite news articles for teens</p>
+                
+                <form method="POST" action="{{ url_for('fetch_and_store_news') }}" class="admin-form">
+                    <div class="form-group">
+                        <label for="topic">News Topic:</label>
+                        <input type="text" id="topic" name="topic" placeholder="Enter news topic (e.g., 'climate change', 'artificial intelligence')" required>
+                        <small>Enter what news topic you want to fetch articles about</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <select id="category" name="category" required>
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                        <small>Choose the most appropriate category for this topic</small>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-download"></i> Fetch Article
+                    </button>
+                </form>
+            </section>
+
+            <section class="admin-section">
+                <h2><i class="fas fa-newspaper"></i> Recent Articles</h2>
+                <p>Latest articles in the database</p>
+                
+                {% if articles %}
+                    <div class="admin-articles">
+                        {% for article in articles %}
+                            <div class="admin-article-card">
+                                <div class="article-header">
+                                    <h3><a href="{{ url_for('view_article', article_id=article.id) }}">{{ article.headline }}</a></h3>
+                                    <div class="article-meta">
+                                        <span class="article-category">{{ article.category }}</span>
+                                        <span class="article-date">{{ article.created_at[:10] }}</span>
+                                        <span class="article-source">{{ article.source }}</span>
+                                    </div>
+                                </div>
+                                <div class="article-preview">
+                                    {% if article.content|length > 200 %}
+                                        {{ article.content[:200] }}...
+                                    {% else %}
+                                        {{ article.content }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-articles">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No articles yet</h3>
+                        <p>Use the form above to fetch your first article!</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="admin-section">
+                <h2><i class="fas fa-info-circle"></i> Setup Instructions</h2>
+                <div class="setup-info">
+                    <div class="setup-step">
+                        <h4>1. Environment Variables</h4>
+                        <p>Create a <code>.env</code> file with:</p>
+                        <pre>SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_anon_key
+PERPLEXITY_API_KEY=your_perplexity_api_key</pre>
+                    </div>
+                    
+                    <div class="setup-step">
+                        <h4>2. Database Setup</h4>
+                        <p>Run the SQL schema in your Supabase project (see <code>database_schema.sql</code>)</p>
+                        <a href="{{ url_for('test_supabase') }}" class="btn-secondary">Test Database Connection</a>
+                    </div>
+                    
+                    <div class="setup-step">
+                        <h4>3. API Keys</h4>
+                        <ul>
+                            <li><strong>Supabase:</strong> Get from your Supabase project settings</li>
+                            <li><strong>Perplexity:</strong> Get from <a href="https://perplexity.ai" target="_blank">perplexity.ai</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeenBuzz Admin</h4>
+                    <p>Content management for teen-friendly news</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Actions</h4>
+                    <a href="{{ url_for('home') }}">View Site</a>
+                    <a href="{{ url_for('test_supabase') }}">Test Database</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Stats</h4>
+                    <p>Total Articles: {{ articles|length if articles else 0 }}</p>
+                    <p>Pure Python Backend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

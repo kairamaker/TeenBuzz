@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeenBuzz - {{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        <h1>TeenBuzz</h1>
+                        <span class="tagline">News That Matters</span>
+                    </a>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="#categories" class="nav-link">Categories</a>
+                    <a href="{{ url_for('admin_panel') }}" class="btn-primary">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Stay Informed, Stay Connected</h2>
+                <p>Get the latest news written just for teens. Real stories, real impact, real easy to understand.</p>
+                <div class="hero-buttons">
+                    <a href="#articles" class="btn-primary">Read Latest News</a>
+                    <a href="#categories" class="btn-secondary">Browse Categories</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories" id="categories">
+        <div class="container">
+            <h2>What Interests You?</h2>
+            <div class="category-grid">
+                {% for category in categories %}
+                <a href="{{ url_for('category_articles', category=category) }}" class="category-card">
+                    <div class="category-icon">
+                        <i class="{{ get_category_icon(category) }}"></i>
+                    </div>
+                    <h3>{{ category }}</h3>
+                    <p>Latest {{ category.lower() }} news for teens</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section class="articles" id="articles">
+        <div class="container">
+            <div class="section-header">
+                <h2>{{ page_title }}</h2>
+                <div class="view-controls">
+                    <a href="{{ url_for('home') }}" class="btn-filter {% if current_category == 'All' %}active{% endif %}">All</a>
+                    <a href="{{ url_for('category_articles', category='Technology') }}" class="btn-filter {% if current_category == 'Technology' %}active{% endif %}">Tech</a>
+                    <a href="{{ url_for('category_articles', category='Entertainment') }}" class="btn-filter {% if current_category == 'Entertainment' %}active{% endif %}">Entertainment</a>
+                    <a href="{{ url_for('category_articles', category='Sports') }}" class="btn-filter {% if current_category == 'Sports' %}active{% endif %}">Sports</a>
+                </div>
+            </div>
+            
+            <div class="articles-grid">
+                {% if articles %}
+                    {% for article in articles %}
+                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-card">
+                        <div class="article-image">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span class="article-category">{{ article.category }}</span>
+                                <span class="article-date">{{ article.created_at[:10] }}</span>
+                                <span class="article-source">{{ article.source }}</span>
+                            </div>
+                            <h3>{{ article.headline }}</h3>
+                            <p class="article-excerpt">
+                                {% if article.content|length > 150 %}
+                                    {{ article.content[:150] }}...
+                                {% else %}
+                                    {{ article.content }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-articles">
+                        <h3>No articles found</h3>
+                        <p>Try fetching some articles using the <a href="{{ url_for('admin_panel') }}">admin panel</a> or check back later!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeenBuzz</h4>
+                    <p>Making news accessible and engaging for teenagers worldwide.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="{{ url_for('home') }}">Home</a>
+                    <a href="#categories">Categories</a>
+                    <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <p>Built during summer internship 2025</p>
+                    <p>Pure Python Backend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 
