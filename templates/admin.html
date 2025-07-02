@@ -15,13 +15,13 @@
             <div class="flash-messages">
                 {% for category, message in messages %}
                     <div class="flash-message {{ category }}">
-                        <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-                        {{ message }}
+                        <span class="message-content">{{ message }}</span>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
     {% endwith %}
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
 
     <!-- Header -->
     <header class="header">
@@ -35,7 +35,15 @@
                 </div>
                 <nav class="nav-menu">
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
-                    <a href="{{ url_for('test_supabase') }}" class="btn-secondary">Test Database</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    {% endif %}
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('test_supabase') }}" class="btn-secondary">Test Database</a>
+                    {% endif %}
                 </nav>
             </div>
         </div>

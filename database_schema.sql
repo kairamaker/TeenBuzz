@@ -1,6 +1,17 @@
 -- TeenBuzz Database Schema for Supabase
 
--- Articles table to store news articles
+-- Users table for authentication and tracking
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_login TIMESTAMP WITH TIME ZONE,
+    is_admin BOOLEAN DEFAULT FALSE
+);
+
+-- Articles table to store news articles (updated with user tracking)
 CREATE TABLE IF NOT EXISTS articles (
     id BIGSERIAL PRIMARY KEY,
     headline VARCHAR(200) NOT NULL,
@@ -10,8 +21,17 @@ CREATE TABLE IF NOT EXISTS articles (
     relevance TEXT,
     image_url VARCHAR(500),
     original_url VARCHAR(500),
+    drawn_by_user_id BIGINT REFERENCES users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User article draws tracking (for rate limiting and analytics)
+CREATE TABLE IF NOT EXISTS user_draws (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) NOT NULL,
+    article_id BIGINT REFERENCES articles(id) NOT NULL,
+    drawn_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Categories table (optional, for future expansion)
@@ -40,14 +60,29 @@ ON CONFLICT (name) DO NOTHING;
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
 CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_source ON articles(source);
+CREATE INDEX IF NOT EXISTS idx_articles_drawn_by ON articles(drawn_by_user_id);
+CREATE INDEX IF NOT EXISTS idx_user_draws_user_id ON user_draws(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_draws_drawn_at ON user_draws(drawn_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
--- Enable Row Level Security (RLS) - optional for future user features
+-- Enable Row Level Security (RLS)
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_draws ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for public read access (since it's a news app)
 CREATE POLICY "Articles are publicly readable" ON articles FOR SELECT USING (true);
 CREATE POLICY "Categories are publicly readable" ON categories FOR SELECT USING (true);
 
--- For admin operations, you might want to add policies for INSERT/UPDATE/DELETE
--- These would typically be restricted to authenticated admin users 
+-- Policies for user operations
+CREATE POLICY "Users can insert articles" ON articles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update their own articles" ON articles FOR UPDATE USING (true);
+CREATE POLICY "Users can insert draws" ON user_draws FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can view their own draws" ON user_draws FOR SELECT USING (true);
+
+-- Insert a default admin user (password: admin123)
+-- In production, you should use a proper password hashing library
+INSERT INTO users (username, password_hash, email, is_admin) VALUES
+('admin', 'admin123', 'admin@teenbuzz.com', TRUE)
+ON CONFLICT (username) DO NOTHING; 

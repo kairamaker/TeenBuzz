@@ -40,7 +40,7 @@ FLASK_DEBUG=True
 python app.py
 ```
 
-Visit `http://localhost:5000` to see your app!
+Visit `http://localhost:8000` to see your app!
 
 ## 📱 Features
 

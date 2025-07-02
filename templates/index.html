@@ -5,8 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TeenBuzz - {{ page_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        .logo h1, .logo .teenbuzz-logo {
+            font-family: 'Barriecito', cursive, sans-serif;
+            color: #606c38;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <!-- Flash Messages -->
@@ -14,11 +24,14 @@
         {% if messages %}
             <div class="flash-messages">
                 {% for category, message in messages %}
-                    <div class="flash-message {{ category }}">{{ message }}</div>
+                    <div class="flash-message {{ category }}">
+                        <span class="message-content">{{ message }}</span>
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
     {% endwith %}
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
 
     <!-- Header -->
     <header class="header">
@@ -26,14 +39,23 @@
             <div class="nav">
                 <div class="logo">
                     <a href="{{ url_for('home') }}">
-                        <h1>TeenBuzz</h1>
+                        <h1 class="teenbuzz-logo">TeenBuzz</h1>
                         <span class="tagline">News That Matters</span>
                     </a>
                 </div>
                 <nav class="nav-menu">
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="#categories" class="nav-link">Categories</a>
-                    <a href="{{ url_for('admin_panel') }}" class="btn-primary">Admin</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn-secondary">Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn-primary">Register</a>
+                    {% endif %}
                 </nav>
             </div>
         </div>
@@ -48,6 +70,15 @@
                 <div class="hero-buttons">
                     <a href="#articles" class="btn-primary">Read Latest News</a>
                     <a href="#categories" class="btn-secondary">Browse Categories</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}" class="btn-primary" style="background: #28a745;">
+                            <i class="fas fa-magic"></i> Draw Article
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn-primary" style="background: #28a745;">
+                            <i class="fas fa-user-plus"></i> Join to Draw Articles
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -56,15 +87,12 @@
     <!-- Categories Section -->
     <section class="categories" id="categories">
         <div class="container">
-            <h2>What Interests You?</h2>
-            <div class="category-grid">
+            <h2>Categories</h2>
+            <div class="category-banner">
                 {% for category in categories %}
-                <a href="{{ url_for('category_articles', category=category) }}" class="category-card">
-                    <div class="category-icon">
-                        <i class="{{ get_category_icon(category) }}"></i>
-                    </div>
-                    <h3>{{ category }}</h3>
-                    <p>Latest {{ category.lower() }} news for teens</p>
+                <a href="{{ url_for('category_articles', category=category) }}" class="category-banner-link">
+                    <span class="category-banner-icon"><i class="{{ get_category_icon(category) }}"></i></span>
+                    <span class="category-banner-label">{{ category }}</span>
                 </a>
                 {% endfor %}
             </div>
@@ -130,7 +158,9 @@
                     <h4>Quick Links</h4>
                     <a href="{{ url_for('home') }}">Home</a>
                     <a href="#categories">Categories</a>
-                    <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+                    {% endif %}
                 </div>
                 <div class="footer-section">
                     <h4>Connect</h4>
