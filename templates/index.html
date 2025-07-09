@@ -41,11 +41,15 @@
                     <a href="{{ url_for('home') }}">
                         <h1 class="teenbuzz-logo">TeenBuzz</h1>
                         <span class="tagline">News That Matters</span>
+                        <div class="header-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ current_date }}
+                        </div>
                     </a>
                 </div>
                 <nav class="nav-menu">
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
-                    <a href="#categories" class="nav-link">Categories</a>
+                    <a href="{{ url_for('categories_page') }}" class="nav-link">Categories</a>
                     {% if current_user.is_authenticated %}
                         <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
                         {% if current_user.is_admin %}
@@ -69,14 +73,14 @@
                 <p>Get the latest news written just for teens. Real stories, real impact, real easy to understand.</p>
                 <div class="hero-buttons">
                     <a href="#articles" class="btn-primary">Read Latest News</a>
-                    <a href="#categories" class="btn-secondary">Browse Categories</a>
+                    <a href="{{ url_for('categories_page') }}" class="btn-secondary">Browse Categories</a>
                     {% if current_user.is_authenticated %}
                         <a href="{{ url_for('profile') }}" class="btn-primary" style="background: #28a745;">
                             <i class="fas fa-magic"></i> Draw Article
                         </a>
                     {% else %}
                         <a href="{{ url_for('register') }}" class="btn-primary" style="background: #28a745;">
-                            <i class="fas fa-user-plus"></i> Join to Draw Articles
+                            <i class="fas fa-user-plus"></i> Join
                         </a>
                     {% endif %}
                 </div>
@@ -84,54 +88,84 @@
         </div>
     </section>
 
-    <!-- Categories Section -->
-    <section class="categories" id="categories">
-        <div class="container">
-            <h2>Categories</h2>
-            <div class="category-banner">
-                {% for category in categories %}
-                <a href="{{ url_for('category_articles', category=category) }}" class="category-banner-link">
-                    <span class="category-banner-icon"><i class="{{ get_category_icon(category) }}"></i></span>
-                    <span class="category-banner-label">{{ category }}</span>
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
 
-    <!-- Articles Section -->
-    <section class="articles" id="articles">
+
+    <!-- Today's Articles Section -->
+    <section class="today-articles" id="today">
         <div class="container">
             <div class="section-header">
-                <h2>{{ page_title }}</h2>
-                <div class="view-controls">
-                    <a href="{{ url_for('home') }}" class="btn-filter {% if current_category == 'All' %}active{% endif %}">All</a>
-                    <a href="{{ url_for('category_articles', category='Technology') }}" class="btn-filter {% if current_category == 'Technology' %}active{% endif %}">Tech</a>
-                    <a href="{{ url_for('category_articles', category='Entertainment') }}" class="btn-filter {% if current_category == 'Entertainment' %}active{% endif %}">Entertainment</a>
-                    <a href="{{ url_for('category_articles', category='Sports') }}" class="btn-filter {% if current_category == 'Sports' %}active{% endif %}">Sports</a>
-                </div>
+                <h2>
+                    <i class="fas fa-sun"></i>
+                    Today's News
+                </h2>
+                <p class="section-subtitle">Fresh articles from {{ current_date }}</p>
             </div>
-            
             <div class="articles-grid">
-                {% if articles %}
-                    {% for article in articles %}
-                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-card">
+                {% if today_articles %}
+                    {% for article in today_articles %}
+                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-card today-card">
                         <div class="article-image">
                             <i class="fas fa-newspaper"></i>
+                            <div class="article-date-badge today-badge">
+                                <i class="fas fa-calendar"></i>
+                                Today
+                            </div>
                         </div>
                         <div class="article-content">
                             <div class="article-meta">
                                 <span class="article-category">{{ article.category }}</span>
-                                <span class="article-date">{{ article.created_at[:10] }}</span>
                                 <span class="article-source">{{ article.source }}</span>
                             </div>
                             <h3>{{ article.headline }}</h3>
                             <p class="article-excerpt">
-                                {% if article.content|length > 150 %}
-                                    {{ article.content[:150] }}...
-                                {% else %}
-                                    {{ article.content }}
-                                {% endif %}
+                                {% set words = article.content.split()[:25] %}
+                                {{ ' '.join(words) }}{% if article.content.split()|length > 25 %}...{% endif %}
+                            </p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-articles">
+                        <h3>No articles found for today</h3>
+                        <p>Try fetching some articles using the <a href="{{ url_for('admin_panel') }}">admin panel</a> or check back later!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- All Articles Section -->
+    <section class="articles" id="articles">
+        <div class="container">
+            <div class="section-header">
+                <h2>All Articles</h2>
+                <div class="view-controls">
+                    <a href="{{ url_for('home') }}" class="btn-filter {% if current_category == 'All' %}active{% endif %}">All</a>
+                    {% for category in categories_with_articles %}
+                    <a href="{{ url_for('category_articles', category=category) }}" class="btn-filter {% if current_category == category %}active{% endif %}">{{ category }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="articles-grid">
+                {% if all_articles %}
+                    {% for article in all_articles %}
+                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-card">
+                        <div class="article-image">
+                            <i class="fas fa-newspaper"></i>
+                            <div class="article-date-badge">
+                                <i class="fas fa-calendar"></i>
+                                {{ format_date(article.created_at) }}
+                            </div>
+                        </div>
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span class="article-category">{{ article.category }}</span>
+                                <span class="article-source">{{ article.source }}</span>
+                            </div>
+                            <h3>{{ article.headline }}</h3>
+                            <p class="article-excerpt">
+                                {% set words = article.content.split()[:25] %}
+                                {{ ' '.join(words) }}{% if article.content.split()|length > 25 %}...{% endif %}
                             </p>
                         </div>
                     </a>
@@ -142,6 +176,14 @@
                         <p>Try fetching some articles using the <a href="{{ url_for('admin_panel') }}">admin panel</a> or check back later!</p>
                     </div>
                 {% endif %}
+            </div>
+            
+            <!-- Browse More Button -->
+            <div class="browse-more-section">
+                <a href="{{ url_for('categories_page') }}" class="btn-primary browse-more-btn">
+                    <i class="fas fa-th-large"></i>
+                    Browse More Articles
+                </a>
             </div>
         </div>
     </section>

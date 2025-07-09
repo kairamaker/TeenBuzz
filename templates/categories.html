@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Barriecito&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        .logo h1, .logo .teenbuzz-logo {
+            font-family: 'Barriecito', cursive, sans-serif;
+            color: #606c38;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <span class="message-content">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        <h1 class="teenbuzz-logo">TeenBuzz</h1>
+                        <span class="tagline">News That Matters</span>
+                        <div class="header-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ current_date }}
+                        </div>
+                    </a>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('categories_page') }}" class="nav-link active">Categories</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn-secondary">Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn-primary">Register</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Categories Hero -->
+    <section class="categories-hero">
+        <div class="container">
+            <div class="categories-hero-content">
+                <h1>Browse News Categories</h1>
+                <p>Discover news that matters to you. Filter by category to find stories that interest you most.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Filter -->
+    <section class="category-filter-section">
+        <div class="container">
+            <div class="filter-controls">
+                <h3>Filter by Category:</h3>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="all">
+                        <i class="fas fa-globe"></i>
+                        All Categories
+                    </button>
+                    {% for category in categories %}
+                    <button class="category-btn" data-category="{{ category.lower() }}">
+                        <i class="{{ get_category_icon(category) }}"></i>
+                        {{ category }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Articles Grid -->
+    <section class="categories-articles">
+        <div class="container">
+            <!-- Unified Grid View (for specific categories) -->
+            <div class="articles-container unified-grid" id="unified-grid" style="display: none;">
+                <div class="category-articles">
+                    {% for article in all_articles %}
+                    <div class="category-article-card" data-category="{{ article.category.lower() }}">
+                        <div class="article-image">
+                            <i class="fas fa-newspaper"></i>
+                                                                <div class="article-date-badge">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ format_date(article.created_at) }}
+                                    </div>
+                        </div>
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span class="article-category">{{ article.category }}</span>
+                                <span class="article-source">{{ article.source }}</span>
+                            </div>
+                            <h3>{{ article.headline }}</h3>
+                            <p class="article-excerpt">
+                                {% set words = article.content.split()[:20] %}
+                                {{ ' '.join(words) }}{% if article.content.split()|length > 20 %}...{% endif %}
+                            </p>
+                            <a href="{{ url_for('view_article', article_id=article.id) }}" class="read-more-btn">
+                                Read Full Article
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sectioned View (for All Categories) -->
+            <div class="articles-container sectioned-view" id="sectioned-view">
+                {% for category in categories %}
+                <div class="category-section" data-category="{{ category.lower() }}">
+                    <h2 class="category-title">
+                        <i class="{{ get_category_icon(category) }}"></i>
+                        {{ category }}
+                    </h2>
+                    <div class="category-articles">
+                        {% if articles_by_category.get(category, []) %}
+                            {% for article in articles_by_category.get(category, []) %}
+                            <div class="category-article-card" data-category="{{ category.lower() }}">
+                                <div class="article-image">
+                                    <i class="fas fa-newspaper"></i>
+                                    <div class="article-date-badge">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ format_date(article.created_at) }}
+                                    </div>
+                                </div>
+                                <div class="article-content">
+                                    <div class="article-meta">
+                                        <span class="article-category">{{ article.category }}</span>
+                                        <span class="article-source">{{ article.source }}</span>
+                                    </div>
+                                    <h3>{{ article.headline }}</h3>
+                                    <p class="article-excerpt">
+                                        {% set words = article.content.split()[:20] %}
+                                        {{ ' '.join(words) }}{% if article.content.split()|length > 20 %}...{% endif %}
+                                    </p>
+                                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="read-more-btn">
+                                        Read Full Article
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-articles-message">
+                                <i class="fas fa-newspaper"></i>
+                                <h3>No articles yet in {{ category }}</h3>
+                                <p>Check back soon for new {{ category.lower() }} articles!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeenBuzz</h4>
+                    <p>Making news accessible and engaging for teenagers worldwide.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="{{ url_for('home') }}">Home</a>
+                    <a href="{{ url_for('categories_page') }}">Categories</a>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+                    {% endif %}
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <p>Built during summer internship 2025</p>
+                    <p>Pure Python Backend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Category filtering functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            const unifiedGrid = document.getElementById('unified-grid');
+            const sectionedView = document.getElementById('sectioned-view');
+            const articleCards = document.querySelectorAll('.category-article-card');
+
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const selectedCategory = this.getAttribute('data-category');
+                    
+                    // Update active button
+                    categoryButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show/hide unified grid and sectioned view
+                    if (selectedCategory === 'all') {
+                        unifiedGrid.style.display = 'none';
+                        sectionedView.style.display = 'block';
+                    } else {
+                        unifiedGrid.style.display = 'block';
+                        sectionedView.style.display = 'none';
+                        
+                        // Filter articles within unified grid
+                        articleCards.forEach(card => {
+                            const cardCategory = card.getAttribute('data-category');
+                            if (cardCategory === selectedCategory) {
+                                card.style.display = 'block';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

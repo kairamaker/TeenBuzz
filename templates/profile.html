@@ -163,7 +163,7 @@
                 {{ user.username[0].upper() }}
             </div>
             <h2>Welcome, {{ user.username }}!</h2>
-            <p>Member since {{ user.created_at[:10] if user.created_at else 'Recently' }}</p>
+            <p>Member since {{ format_date(user.created_at) if user.created_at else 'Recently' }}</p>
             
             <button id="draw-article-btn" class="draw-button">
                 <i class="fas fa-magic"></i> Draw a New Article
@@ -207,7 +207,7 @@
                     <div class="article-content">
                         <div class="article-meta">
                             <span class="article-category">{{ article.category }}</span>
-                            <span class="article-date">{{ article.created_at[:10] }}</span>
+                            <span class="article-date">{{ format_date(article.created_at) }}</span>
                             <span class="article-source">{{ article.source }}</span>
                         </div>
                         <h3>{{ article.headline }}</h3>

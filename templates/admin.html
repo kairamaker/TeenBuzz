@@ -91,7 +91,7 @@
                                     <h3><a href="{{ url_for('view_article', article_id=article.id) }}">{{ article.headline }}</a></h3>
                                     <div class="article-meta">
                                         <span class="article-category">{{ article.category }}</span>
-                                        <span class="article-date">{{ article.created_at[:10] }}</span>
+                                        <span class="article-date">{{ format_date(article.created_at) }}</span>
                                         <span class="article-source">{{ article.source }}</span>
                                     </div>
                                 </div>

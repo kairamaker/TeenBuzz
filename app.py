@@ -98,6 +98,17 @@ def get_category_icon(category):
     }
     return icons.get(category, 'fas fa-newspaper')
 
+def format_date(date_string):
+    """Format date string to DD/MM/YYYY format"""
+    try:
+        if not date_string:
+            return "Unknown"
+        # Parse the ISO format date string
+        date_obj = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+        return date_obj.strftime('%d/%m/%Y')
+    except:
+        return "Unknown"
+
 @app.route('/')
 def home():
     """Home page with latest articles"""
@@ -105,30 +116,56 @@ def home():
         if not supabase:
             flash('Database not configured. Please set up your Supabase credentials in .env file.', 'error')
             return render_template('index.html', 
-                                 articles=[],
+                                 today_articles=[],
+                                 recent_articles=[],
                                  categories=NEWS_CATEGORIES,
+                                 categories_with_articles=[],
                                  get_category_icon=get_category_icon,
+                                 format_date=format_date,
                                  current_category='All',
-                                 page_title='Latest News')
+                                 page_title='Latest News',
+                                 current_date=datetime.now().strftime('%B %d, %Y'))
         
-        # Get latest articles
-        result = supabase.table('articles').select('*').order('created_at', desc=True).limit(9).execute()
-        articles = result.data or []
+        # Get today's articles
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time()).isoformat()
+        today_end = datetime.combine(today, datetime.max.time()).isoformat()
+        today_result = supabase.table('articles').select('*').gte('created_at', today_start).lte('created_at', today_end).order('created_at', desc=True).execute()
+        today_articles = today_result.data or []
+
+        # Get all articles (limited to 8-10)
+        all_articles_result = supabase.table('articles').select('*').order('created_at', desc=True).limit(10).execute()
+        all_articles = all_articles_result.data or []
+
+        # Get categories that have articles
+        all_articles_combined = today_articles + all_articles
+        categories_with_articles = []
+        if all_articles_combined:
+            article_categories = set(article['category'] for article in all_articles_combined)
+            categories_with_articles = [cat for cat in NEWS_CATEGORIES if cat in article_categories]
         
         return render_template('index.html', 
-                             articles=articles,
+                             today_articles=today_articles,
+                             all_articles=all_articles,
                              categories=NEWS_CATEGORIES,
+                             categories_with_articles=categories_with_articles,
                              get_category_icon=get_category_icon,
+                             format_date=format_date,
                              current_category='All',
-                             page_title='Latest News')
+                             page_title='Latest News',
+                             current_date=datetime.now().strftime('%B %d, %Y'))
     except Exception as e:
         flash(f'Error loading articles: {str(e)}', 'error')
         return render_template('index.html', 
-                             articles=[],
+                             today_articles=[],
+                             all_articles=[],
                              categories=NEWS_CATEGORIES,
+                             categories_with_articles=[],
                              get_category_icon=get_category_icon,
+                             format_date=format_date,
                              current_category='All',
-                             page_title='Latest News')
+                             page_title='Latest News',
+                             current_date=datetime.now().strftime('%B %d, %Y'))
 
 @app.route('/category/<category>')
 def category_articles(category):
@@ -142,12 +179,29 @@ def category_articles(category):
         result = supabase.table('articles').select('*').eq('category', category).order('created_at', desc=True).limit(9).execute()
         articles = result.data or []
         
+        # Get today's articles for this category
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time()).isoformat()
+        today_end = datetime.combine(today, datetime.max.time()).isoformat()
+        
+        today_result = supabase.table('articles').select('*').eq('category', category).gte('created_at', today_start).lte('created_at', today_end).order('created_at', desc=True).execute()
+        today_articles = today_result.data or []
+        
+        # Get categories that have articles
+        categories_with_articles = []
+        if articles:
+            article_categories = set(article['category'] for article in articles)
+            categories_with_articles = [cat for cat in NEWS_CATEGORIES if cat in article_categories]
+        
         return render_template('index.html',
                              articles=articles,
+                             today_articles=today_articles,
                              categories=NEWS_CATEGORIES,
+                             categories_with_articles=categories_with_articles,
                              get_category_icon=get_category_icon,
                              current_category=category,
-                             page_title=f'{category} News')
+                             page_title=f'{category} News',
+                             current_date=datetime.now().strftime('%B %d, %Y'))
     except Exception as e:
         flash(f'Error loading {category} articles: {str(e)}', 'error')
         return redirect(url_for('home'))
@@ -365,11 +419,11 @@ def test_supabase():
 def login():
     """User login page"""
     if request.method == 'POST':
-        username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
         
-        if not username or not password:
-            flash('Please enter both username and password', 'error')
+        if not email or not password:
+            flash('Please enter both email and password', 'error')
             return render_template('login.html')
         
         try:
@@ -378,7 +432,7 @@ def login():
                 return render_template('login.html')
             
             # Get user from database
-            result = supabase.table('users').select('*').eq('username', username).single().execute()
+            result = supabase.table('users').select('*').eq('email', email).single().execute()
             user_data = result.data
             
             if user_data and check_password_hash(user_data['password_hash'], password):
@@ -388,10 +442,10 @@ def login():
                 # Update last login
                 supabase.table('users').update({'last_login': datetime.now().isoformat()}).eq('id', user_data['id']).execute()
                 
-                flash(f'Welcome back, {username}!', 'success')
+                flash(f'Welcome back, {user_data.get("name", email)}!', 'success')
                 return redirect(url_for('home'))
             else:
-                flash('Invalid username or password', 'error')
+                flash('Invalid email or password', 'error')
                 
         except Exception as e:
             flash(f'Login error: {str(e)}', 'error')
@@ -402,35 +456,47 @@ def login():
 def register():
     """User registration page"""
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        name = request.form.get('name')
         email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        topics = request.form.getlist('topics')
         
-        if not username or not password:
-            flash('Please enter both username and password', 'error')
-            return render_template('register.html')
+        # Validation
+        if not name or not email or not password:
+            flash('Please fill in all required fields', 'error')
+            return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
+        
+        if password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
         
         if len(password) < 6:
             flash('Password must be at least 6 characters long', 'error')
-            return render_template('register.html')
+            return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
+        
+        if not topics:
+            flash('Please select at least one category of interest', 'error')
+            return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
         
         try:
             if not supabase:
                 flash('Database not configured', 'error')
-                return render_template('register.html')
+                return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
             
-            # Check if username already exists
-            result = supabase.table('users').select('id').eq('username', username).execute()
+            # Check if email already exists
+            result = supabase.table('users').select('id').eq('email', email).execute()
             if result.data:
-                flash('Username already exists', 'error')
-                return render_template('register.html')
+                flash('Email already registered', 'error')
+                return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
             
             # Create new user
             password_hash = generate_password_hash(password)
             user_data = {
-                'username': username,
-                'password_hash': password_hash,
+                'name': name,
                 'email': email,
+                'password_hash': password_hash,
+                'topics_of_interest': topics,
                 'created_at': datetime.now().isoformat()
             }
             
@@ -441,13 +507,13 @@ def register():
             user = User(new_user)
             login_user(user)
             
-            flash(f'Account created successfully! Welcome, {username}!', 'success')
+            flash(f'Account created successfully! Welcome, {name}!', 'success')
             return redirect(url_for('home'))
             
         except Exception as e:
             flash(f'Registration error: {str(e)}', 'error')
     
-    return render_template('register.html')
+    return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
 
 @app.route('/logout')
 @login_required
@@ -481,6 +547,81 @@ def profile():
     except Exception as e:
         flash(f'Error loading profile: {str(e)}', 'error')
         return redirect(url_for('home'))
+
+@app.route('/categories')
+def categories_page():
+    """Categories page with filtering options"""
+    try:
+        if not supabase:
+            flash('Database not configured. Please set up your Supabase credentials in .env file.', 'error')
+            return render_template('categories.html', 
+                                 categories=NEWS_CATEGORIES,
+                                 articles_by_category={},
+                                 all_articles=[],
+                                 get_category_icon=get_category_icon,
+                                 format_date=format_date,
+                                 current_date=datetime.now().strftime('%B %d, %Y'))
+        
+        # Get all articles grouped by category
+        result = supabase.table('articles').select('*').order('created_at', desc=True).execute()
+        all_articles = result.data or []
+        
+        # Group articles by category
+        articles_by_category = {}
+        for category in NEWS_CATEGORIES:
+            articles_by_category[category] = []
+        
+        for article in all_articles:
+            if article['category'] in articles_by_category:
+                articles_by_category[article['category']].append(article)
+        
+        return render_template('categories.html', 
+                             categories=NEWS_CATEGORIES,
+                             articles_by_category=articles_by_category,
+                             all_articles=all_articles,
+                             get_category_icon=get_category_icon,
+                             format_date=format_date,
+                             current_date=datetime.now().strftime('%B %d, %Y'))
+    except Exception as e:
+        flash(f'Error loading categories: {str(e)}', 'error')
+        return render_template('categories.html', 
+                             categories=NEWS_CATEGORIES,
+                             articles_by_category={},
+                             all_articles=[],
+                             get_category_icon=get_category_icon,
+                             format_date=format_date,
+                             current_date=datetime.now().strftime('%B %d, %Y'))
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Forgot password page"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        
+        if not email:
+            flash('Please enter your email address', 'error')
+            return render_template('forgot_password.html')
+        
+        try:
+            if not supabase:
+                flash('Database not configured', 'error')
+                return render_template('forgot_password.html')
+            
+            # Check if email exists
+            result = supabase.table('users').select('id, username').eq('email', email).single().execute()
+            
+            if result.data:
+                # In a real app, you would send a password reset email here
+                # For now, we'll just show a success message
+                flash(f'Password reset instructions have been sent to {email}', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Email not found in our system', 'error')
+                
+        except Exception as e:
+            flash(f'Error processing request: {str(e)}', 'error')
+    
+    return render_template('forgot_password.html')
 
 @app.route('/draw-article', methods=['POST'])
 @login_required
