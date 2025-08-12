@@ -1,0 +1,23 @@
+shell-init: error retrieving current directory: getcwd: cannot access parent directories: Operation not permitted
+/bin/bash: /Users/kairaschool/Downloads/TeenBuzz/run_daily_fetch.sh: Operation not permitted
+🚀 Starting TeenBuzz Daily Article Fetch...
+✅ Connected to Supabase
+📰 Starting daily article fetch...
+🔄 Fetching article 1/5: Music - trending news today
+✅ Successfully stored: Taylor Swift Drops Surprise Collab — Fans Decode Hidden Clues
+🔄 Fetching article 2/5: Health - trending news today
+❌ Error fetching article: Failed to fetch news: HTTPSConnectionPool(host='api.perplexity.ai', port=443): Read timed out. (read timeout=30)
+🔄 Fetching article 2/5: Technology - trending news today
+✅ Successfully stored: Saturn Hangs Next to the Moon Tonight — Don’t Miss It
+🔄 Fetching article 3/5: Music - breaking news today
+✅ Successfully stored: Latest Music News
+🔄 Fetching article 4/5: Music - trending news today
+✅ Successfully stored: Tonight: Moon Meets Saturn — Don’t Miss This Sky Show
+🔄 Fetching article 5/5: Social Issues - breaking news today
+❌ Error fetching article: Failed to fetch news: HTTPSConnectionPool(host='api.perplexity.ai', port=443): Read timed out. (read timeout=30)
+🔄 Fetching article 5/5: Science - important news today
+✅ Successfully stored: Schools Are Using AI to Read Student Chats. Here’s Why That Matters
+🎉 Daily fetch complete! Successfully fetched 5 articles.
+✅ Daily fetch completed successfully!
+shell-init: error retrieving current directory: getcwd: cannot access parent directories: Operation not permitted
+/bin/bash: /Users/kairaschool/Downloads/TeenBuzz/run_daily_fetch.sh: Operation not permitted

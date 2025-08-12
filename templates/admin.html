@@ -82,6 +82,21 @@
             <section class="admin-section">
                 <h2><i class="fas fa-newspaper"></i> Recent Articles</h2>
                 <p>Latest articles in the database</p>
+
+                <form method="GET" action="{{ url_for('admin_panel') }}" class="admin-form" style="margin-bottom: 12px;">
+                    <div class="form-group" style="display:flex; gap:12px; align-items:center;">
+                        <label for="date">Filter by date:</label>
+                        <select id="date" name="date" onchange="this.form.submit()">
+                            <option value="">All recent</option>
+                            {% for d in date_options %}
+                                <option value="{{ d.value }}" {% if selected_date == d.value %}selected{% endif %}>{{ d.label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if selected_date %}
+                            <small>Showing articles from {{ selected_date }}</small>
+                        {% endif %}
+                    </div>
+                </form>
                 
                 {% if articles %}
                     <div class="admin-articles">
@@ -108,8 +123,12 @@
                 {% else %}
                     <div class="no-articles">
                         <i class="fas fa-inbox"></i>
-                        <h3>No articles yet</h3>
-                        <p>Use the form above to fetch your first article!</p>
+                        <h3>No articles found</h3>
+                        {% if selected_date %}
+                            <p>No articles exist for {{ selected_date }}. Try another day.</p>
+                        {% else %}
+                            <p>Use the form above to fetch your first article!</p>
+                        {% endif %}
                     </div>
                 {% endif %}
             </section>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.teenbuzz.dailyfetch</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/kairaschool/Downloads/TeenBuzz/run_daily_fetch.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/kairaschool/Downloads/TeenBuzz</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/kairaschool/Downloads/TeenBuzz/daily_fetch.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/kairaschool/Downloads/TeenBuzz/daily_fetch.log</string>
+</dict>
+</plist> 

@@ -4,16 +4,20 @@ from supabase.client import create_client, Client
 import os
 from dotenv import load_dotenv
 import requests
+import secrets
+import time
 from datetime import datetime, timedelta
 import json
 import random
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
+from threading import Thread, Lock
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Change this to a secure secret key
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this to a secure secret key
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -55,6 +59,15 @@ if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith('your_'):
     except Exception as e:
         print(f"Warning: Could not initialize Supabase client: {e}")
         supabase = None
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'TeenBuzzTeam@gmail.com'
+app.config['MAIL_PASSWORD'] = 'wjpq dpoi ureg sdaa'
+app.config['MAIL_DEFAULT_SENDER'] = 'TeenBuzzTeam@gmail.com'
+mail = Mail(app)
 
 # News categories for teens
 NEWS_CATEGORIES = [
@@ -109,6 +122,71 @@ def format_date(date_string):
     except:
         return "Unknown"
 
+@app.context_processor
+def inject_template_helpers():
+    return {
+        'format_date': format_date,
+        'get_category_icon': get_category_icon,
+    }
+
+# Track if we've done an automatic fetch for today to avoid repeated triggers
+_last_auto_fetch_date_lock = Lock()
+_last_auto_fetch_date = None
+
+def _auto_fetch_if_needed_async():
+    """Kick off a background fetch of up to 3 articles if none exist for today."""
+    def _task():
+        global _last_auto_fetch_date
+        try:
+            if not supabase:
+                return
+            # Check if already fetched today
+            today = datetime.now().date()
+            with _last_auto_fetch_date_lock:
+                if _last_auto_fetch_date == today:
+                    return
+            # Check DB for today's articles
+            today_start = datetime.combine(today, datetime.min.time()).isoformat()
+            today_end = datetime.combine(today, datetime.max.time()).isoformat()
+            existing_today = supabase.table('articles').select('id').gte('created_at', today_start).lte('created_at', today_end).execute()
+            if existing_today.data:
+                with _last_auto_fetch_date_lock:
+                    _last_auto_fetch_date = today
+                return
+            # Require Perplexity key
+            if not PERPLEXITY_API_KEY or PERPLEXITY_API_KEY.startswith('your_'):
+                return
+            # Fetch up to 3 articles using existing helper
+            attempts = 0
+            successes = 0
+            used_categories = set()
+            while attempts < 6 and successes < 3:
+                attempts += 1
+                try:
+                    # Pick a category not used yet if possible
+                    remaining = [c for c in NEWS_CATEGORIES if c not in used_categories] or NEWS_CATEGORIES
+                    category = random.choice(remaining)
+                    used_categories.add(category)
+                    article_data = fetch_news_from_perplexity('top stories today', category)
+                    supabase.table('articles').insert({
+                        'headline': article_data['headline'],
+                        'content': article_data['content'],
+                        'source': article_data['source'],
+                        'original_url': article_data.get('original_url', ''),
+                        'category': article_data['category'],
+                        'relevance': article_data['relevance'],
+                        'created_at': datetime.now().isoformat()
+                    }).execute()
+                    successes += 1
+                except Exception:
+                    continue
+            with _last_auto_fetch_date_lock:
+                _last_auto_fetch_date = today
+        except Exception:
+            # Fail silently; homepage should still render
+            pass
+    Thread(target=_task, daemon=True).start()
+
 @app.route('/')
 def home():
     """Home page with latest articles"""
@@ -117,7 +195,7 @@ def home():
             flash('Database not configured. Please set up your Supabase credentials in .env file.', 'error')
             return render_template('index.html', 
                                  today_articles=[],
-                                 recent_articles=[],
+                                 all_articles=[],
                                  categories=NEWS_CATEGORIES,
                                  categories_with_articles=[],
                                  get_category_icon=get_category_icon,
@@ -126,26 +204,33 @@ def home():
                                  page_title='Latest News',
                                  current_date=datetime.now().strftime('%B %d, %Y'))
         
-        # Get today's articles
+        # Get recent articles (last 7 days) instead of just today
+        week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+        recent_result = supabase.table('articles').select('*').gte('created_at', week_ago).order('created_at', desc=True).limit(5).execute()
+        recent_articles = recent_result.data or []
+
+        # Also check if we have any for today; if none, trigger background fetch once per day
         today = datetime.now().date()
         today_start = datetime.combine(today, datetime.min.time()).isoformat()
         today_end = datetime.combine(today, datetime.max.time()).isoformat()
-        today_result = supabase.table('articles').select('*').gte('created_at', today_start).lte('created_at', today_end).order('created_at', desc=True).execute()
-        today_articles = today_result.data or []
+        today_count = supabase.table('articles').select('id').gte('created_at', today_start).lte('created_at', today_end).execute()
+        if (not today_count.data) and PERPLEXITY_API_KEY and not PERPLEXITY_API_KEY.startswith('your_'):
+            _auto_fetch_if_needed_async()
+            flash('Fetching fresh articles for today in the background. Please refresh in ~10-20 seconds.', 'info')
 
         # Get all articles (limited to 8-10)
         all_articles_result = supabase.table('articles').select('*').order('created_at', desc=True).limit(10).execute()
         all_articles = all_articles_result.data or []
 
         # Get categories that have articles
-        all_articles_combined = today_articles + all_articles
+        all_articles_combined = recent_articles + all_articles
         categories_with_articles = []
         if all_articles_combined:
             article_categories = set(article['category'] for article in all_articles_combined)
             categories_with_articles = [cat for cat in NEWS_CATEGORIES if cat in article_categories]
         
         return render_template('index.html', 
-                             today_articles=today_articles,
+                             today_articles=recent_articles,
                              all_articles=all_articles,
                              categories=NEWS_CATEGORIES,
                              categories_with_articles=categories_with_articles,
@@ -235,25 +320,62 @@ def admin_panel():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('home'))
     
+    # Build date options for the last 30 days
+    date_options = []
+    today = datetime.now().date()
+    for i in range(30):
+        day = today - timedelta(days=i)
+        date_options.append({
+            'value': day.strftime('%Y-%m-%d'),
+            'label': day.strftime('%b %d, %Y')
+        })
+    
+    selected_date = request.args.get('date', '').strip()
+    
     try:
         if not supabase:
             flash('Database not configured. Please set up your Supabase credentials in .env file.', 'error')
             return render_template('admin.html', 
                                  articles=[],
-                                 categories=NEWS_CATEGORIES)
+                                 categories=NEWS_CATEGORIES,
+                                 format_date=format_date,
+                                 date_options=date_options,
+                                 selected_date=selected_date)
         
-        # Get recent articles for admin view
-        result = supabase.table('articles').select('*').order('created_at', desc=True).limit(10).execute()
-        articles = result.data or []
+        # Filter by selected date if provided
+        articles = []
+        if selected_date:
+            try:
+                day = datetime.strptime(selected_date, '%Y-%m-%d').date()
+                day_start = datetime.combine(day, datetime.min.time()).isoformat()
+                day_end = datetime.combine(day, datetime.max.time()).isoformat()
+                result = supabase.table('articles').select('*') \
+                    .gte('created_at', day_start) \
+                    .lte('created_at', day_end) \
+                    .order('created_at', desc=True).execute()
+                articles = result.data or []
+            except ValueError:
+                flash('Invalid date format. Please select a valid date.', 'error')
+        
+        if not selected_date:
+            # Default: show most recent 10
+            result = supabase.table('articles').select('*').order('created_at', desc=True).limit(10).execute()
+            articles = result.data or []
         
         return render_template('admin.html', 
                              articles=articles,
-                             categories=NEWS_CATEGORIES)
+                             categories=NEWS_CATEGORIES,
+                             format_date=format_date,
+                             date_options=date_options,
+                             selected_date=selected_date)
     except Exception as e:
         flash(f'Error loading admin panel: {str(e)}', 'error')
         return render_template('admin.html', 
                              articles=[],
-                             categories=NEWS_CATEGORIES)
+                             categories=NEWS_CATEGORIES,
+                             format_date=format_date,
+                             date_options=date_options,
+                             selected_date=selected_date)
 
 def fetch_news_from_perplexity(topic, category):
     """Fetch and rewrite news using Perplexity API with robust error handling and correct format"""
@@ -490,13 +612,18 @@ def register():
                 flash('Email already registered', 'error')
                 return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
             
+            # Check if username already exists
+            result = supabase.table('users').select('id').eq('username', name).execute()
+            if result.data:
+                flash('Username already taken. Please choose a different username.', 'error')
+                return render_template('register.html', categories=NEWS_CATEGORIES, get_category_icon=get_category_icon)
+            
             # Create new user
             password_hash = generate_password_hash(password)
             user_data = {
-                'name': name,
+                'username': name,
                 'email': email,
                 'password_hash': password_hash,
-                'topics_of_interest': topics,
                 'created_at': datetime.now().isoformat()
             }
             
@@ -506,6 +633,29 @@ def register():
             # Log in the new user
             user = User(new_user)
             login_user(user)
+            
+            # Send welcome email
+            try:
+                welcome_msg = Message("Welcome to TeenBuzz! 🎉", recipients=[email])
+                welcome_msg.body = f"""Hello {name}!
+
+Welcome to TeenBuzz! We're excited to have you join our community of teen news enthusiasts.
+
+Here's what you can do on TeenBuzz:
+• Read teen-friendly news articles
+• Browse articles by category
+• Stay updated with news that matters to you
+
+Your account has been created successfully and you're now logged in.
+
+If you have any questions or feedback, feel free to reach out to us.
+
+Happy reading!
+The Teen Buzz Team"""
+                mail.send(welcome_msg)
+            except Exception as e:
+                # Don't fail registration if email fails
+                print(f"Welcome email failed to send: {e}")
             
             flash(f'Account created successfully! Welcome, {name}!', 'success')
             return redirect(url_for('home'))
@@ -611,8 +761,37 @@ def forgot_password():
             result = supabase.table('users').select('id, username').eq('email', email).single().execute()
             
             if result.data:
-                # In a real app, you would send a password reset email here
-                # For now, we'll just show a success message
+                user_id = result.data['id']
+                
+                # Generate secure reset token
+                token = secrets.token_urlsafe(32)
+                expires_at = (datetime.now() + timedelta(hours=1)).isoformat()
+                
+                # Store token in database
+                supabase.table('password_reset_tokens').insert({
+                    'user_id': user_id,
+                    'token': token,
+                    'expires_at': expires_at
+                }).execute()
+                
+                # Generate reset link
+                reset_link = url_for('reset_password', token=token, _external=True)
+                
+                # Send real email
+                msg = Message("TeenBuzz Password Reset", recipients=[email])
+                msg.body = f"""Hello!
+
+To reset your password click the link below:
+
+{reset_link}
+
+This link expires in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Thank you,
+Teen Buzz Team"""
+                mail.send(msg)
                 flash(f'Password reset instructions have been sent to {email}', 'success')
                 return redirect(url_for('login'))
             else:
@@ -622,6 +801,64 @@ def forgot_password():
             flash(f'Error processing request: {str(e)}', 'error')
     
     return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password page"""
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            flash('Please enter both new password and confirm password', 'error')
+            return render_template('reset_password.html', token=token)
+
+        if new_password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return render_template('reset_password.html', token=token)
+
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters long', 'error')
+            return render_template('reset_password.html', token=token)
+
+        try:
+            if not supabase:
+                flash('Database not configured', 'error')
+                return render_template('reset_password.html', token=token)
+
+            # Verify token
+            result = supabase.table('password_reset_tokens').select('user_id, expires_at').eq('token', token).single().execute()
+            token_data = result.data
+
+            if not token_data:
+                flash('Password reset link is invalid.', 'error')
+                return redirect(url_for('forgot_password'))
+            
+            # Parse the timestamp and make it timezone-aware for comparison
+            from datetime import timezone
+            expires_at = datetime.fromisoformat(token_data['expires_at'].replace('Z', '+00:00'))
+            current_time = datetime.now(timezone.utc)
+            
+            if expires_at < current_time:
+                flash('Password reset link has expired.', 'error')
+                return redirect(url_for('forgot_password'))
+
+            user_id = token_data['user_id']
+
+            # Update user password
+            password_hash = generate_password_hash(new_password)
+            supabase.table('users').update({'password_hash': password_hash}).eq('id', user_id).execute()
+
+            # Delete the used token
+            supabase.table('password_reset_tokens').delete().eq('token', token).execute()
+
+            flash('Your password has been updated! You are now able to log in', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f'Error resetting password: {str(e)}', 'error')
+            return render_template('reset_password.html', token=token)
+
+    return render_template('reset_password.html', token=token)
 
 @app.route('/draw-article', methods=['POST'])
 @login_required
@@ -696,4 +933,4 @@ def draw_article():
         return jsonify({'success': False, 'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000) 
+    app.run(debug=True, host='0.0.0.0', port=5002) 
