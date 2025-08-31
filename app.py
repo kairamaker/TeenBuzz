@@ -204,10 +204,15 @@ def home():
                                  page_title='Latest News',
                                  current_date=datetime.now().strftime('%B %d, %Y'))
         
-        # Get recent articles (last 7 days) instead of just today
-        week_ago = (datetime.now() - timedelta(days=7)).isoformat()
-        recent_result = supabase.table('articles').select('*').gte('created_at', week_ago).order('created_at', desc=True).limit(5).execute()
+        # Get recent articles (last 2 days) for prominent display
+        two_days_ago = (datetime.now() - timedelta(days=2)).isoformat()
+        recent_result = supabase.table('articles').select('*').gte('created_at', two_days_ago).order('created_at', desc=True).limit(5).execute()
         recent_articles = recent_result.data or []
+        
+        # Get older articles (3-7 days) for additional content
+        week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+        older_recent_result = supabase.table('articles').select('*').gte('created_at', week_ago).lt('created_at', two_days_ago).order('created_at', desc=True).limit(3).execute()
+        older_recent_articles = older_recent_result.data or []
 
         # Also check if we have any for today; if none, trigger background fetch once per day
         today = datetime.now().date()
@@ -223,7 +228,7 @@ def home():
         all_articles = all_articles_result.data or []
 
         # Get categories that have articles
-        all_articles_combined = recent_articles + all_articles
+        all_articles_combined = recent_articles + older_recent_articles + all_articles
         categories_with_articles = []
         if all_articles_combined:
             article_categories = set(article['category'] for article in all_articles_combined)
@@ -231,6 +236,7 @@ def home():
         
         return render_template('index.html', 
                              today_articles=recent_articles,
+                             older_recent_articles=older_recent_articles,
                              all_articles=all_articles,
                              categories=NEWS_CATEGORIES,
                              categories_with_articles=categories_with_articles,
@@ -306,7 +312,7 @@ def view_article(article_id):
             flash('Article not found', 'error')
             return redirect(url_for('home'))
             
-        return render_template('article.html', article=article)
+        return render_template('article_improved.html', article=article)
     except Exception as e:
         flash(f'Error loading article: {str(e)}', 'error')
         return redirect(url_for('home'))

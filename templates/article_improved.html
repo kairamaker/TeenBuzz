@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.headline }} - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .source-info {
+            margin-bottom: 20px;
+        }
+
+        .source-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #606c38;
+            margin-bottom: 10px;
+        }
+
+        .original-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .original-author {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .original-date {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-modal-secondary {
+            background-color: #f8f9fa;
+            color: #666;
+        }
+
+        .btn-modal-secondary:hover {
+            background-color: #e9ecef;
+            color: #333;
+        }
+
+        .btn-modal-primary {
+            background-color: #606c38;
+            color: white;
+        }
+
+        .btn-modal-primary:hover {
+            background-color: #4a5a2a;
+        }
+
+        .article-original-btn {
+            background: linear-gradient(135deg, #606c38, #4a5a2a);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .article-original-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(96, 108, 56, 0.3);
+        }
+
+        .article-original-btn:active {
+            transform: translateY(0);
+        }
+
+        .source-badge {
+            background-color: #f8f9fa;
+            color: #606c38;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid #e9ecef;
+        }
+
+        .publish-date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .btn-modal {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <a href="{{ url_for('home') }}">
+                        <h1>TeenBuzz</h1>
+                        <span class="tagline">News That Matters</span>
+                    </a>
+                </div>
+                <nav class="nav-menu">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('home') }}#categories" class="nav-link">Categories</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Article Content -->
+    <main class="article-page">
+        <div class="container">
+            <article class="article-full">
+                <header class="article-header">
+                    <div class="breadcrumb">
+                        <a href="{{ url_for('home') }}">Home</a> &gt; 
+                        <a href="{{ url_for('category_articles', category=article.category) }}">{{ article.category }}</a> &gt;
+                        <span>Article</span>
+                    </div>
+                    
+                    <div class="article-meta">
+                        <span class="article-category">{{ article.category }}</span>
+                        <span class="article-date">{{ format_date(article.created_at) }}</span>
+                        {% if article.publish_date %}
+                        <span class="publish-date">Published: {{ article.publish_date }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1>{{ article.headline }}</h1>
+                </header>
+
+                <div class="article-image-full">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+
+                <div class="article-body">
+                    <div class="article-content">
+                        {{ article.content | replace('\n', '<br>') | safe }}
+                    </div>
+
+                    {% if article.relevance %}
+                    <div class="article-relevance">
+                        <h3><i class="fas fa-lightbulb"></i> Why This Matters to You:</h3>
+                        <p>{{ article.relevance }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="article-actions">
+                        <a href="{{ url_for('category_articles', category=article.category) }}" class="btn-secondary">
+                            <i class="fas fa-arrow-left"></i> More {{ article.category }} News
+                        </a>
+                        {% if article.original_url %}
+                        <button class="btn-secondary" onclick="openSourceModal()">
+                            <i class="fas fa-external-link-alt"></i> Read Original
+                        </button>
+                        {% endif %}
+                        <a href="{{ url_for('home') }}" class="btn-primary">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- Source Modal -->
+    <div id="sourceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Original Article Source</h3>
+                <span class="close" onclick="closeSourceModal()">&times;</span>
+            </div>
+            
+            <div class="source-info">
+                <div class="source-name">{{ article.source }}</div>
+                {% if article.original_title %}
+                <div class="original-title">{{ article.original_title }}</div>
+                {% else %}
+                <div class="original-title">{{ article.headline }}</div>
+                {% endif %}
+                
+                {% if article.original_author %}
+                <div class="original-author">By {{ article.original_author }}</div>
+                {% endif %}
+                
+                {% if article.publish_date %}
+                <div class="original-date">Published: {{ article.publish_date }}</div>
+                {% endif %}
+                
+                <div class="original-date">TeenBuzz Rewrite: {{ format_date(article.created_at) }}</div>
+            </div>
+            
+            <div class="modal-actions">
+                <a href="{{ article.original_url }}" target="_blank" rel="noopener noreferrer" class="btn-modal btn-modal-primary">
+                    <i class="fas fa-external-link-alt"></i> Visit News Site
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TeenBuzz</h4>
+                    <p>Making news accessible and engaging for teenagers worldwide.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="{{ url_for('home') }}">Home</a>
+                    <a href="{{ url_for('home') }}#categories">Categories</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('profile') }}">Profile</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}">Login</a>
+                    {% endif %}
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <p>Built during summer internship 2025</p>
+                    <p>Pure Python Backend</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Modal functionality
+        function openSourceModal() {
+            document.getElementById('sourceModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeSourceModal() {
+            document.getElementById('sourceModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('sourceModal');
+            if (event.target === modal) {
+                closeSourceModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeSourceModal();
+            }
+        });
+    </script>
+</body>
+</html>
