@@ -246,6 +246,28 @@
                 <p>No draw history yet. Start drawing articles to see your activity!</p>
             {% endif %}
         </div>
+
+        <!-- Interests -->
+        <h3 class="section-title">Your Interests</h3>
+        <div class="draw-history">
+            <form method="POST" action="{{ url_for('update_preferences') }}">
+                <div class="form-help">Update the categories you're interested in. Your For You page uses these.</div>
+                <div class="topics-grid">
+                    {% for category in ['Technology','Entertainment','Sports','Health','Environment','Education','Social Issues','Science','Gaming','Music'] %}
+                    <label class="topic-checkbox">
+                        <input type="checkbox" name="topics" value="{{ category }}" class="topic-input"
+                               {% if topics and (category in topics) %}checked{% endif %}>
+                        <span class="topic-label">
+                            <i class="{{ get_category_icon(category) }}"></i>
+                            {{ category }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top:12px;">Save Preferences</button>
+                <a href="{{ url_for('for_you') }}" class="btn-secondary" style="margin-left:8px;">Go to For You</a>
+            </form>
+        </div>
     </div>
 
     <!-- Footer -->

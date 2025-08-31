@@ -481,7 +481,7 @@ def fetch_and_store_news():
     # Check if user is admin
     if not current_user.is_admin:
         flash('Access denied. Admin privileges required.', 'error')
-        return redirect(url_for('home'))
+        return redirect(url_for('admin_panel'))
     
     try:
         if not supabase:
@@ -630,6 +630,20 @@ def register():
             result = supabase.table('users').insert(user_data).execute()
             new_user = result.data[0]
             
+            # Store user preferences (user_id + topics)
+            try:
+                supabase.table('user_preferences').upsert({
+                    'user_id': new_user['id'],
+                    'email': email,
+                    'topics': topics,
+                    'updated_at': datetime.now().isoformat()
+                }).execute()
+                flash('Account created successfully! Your interests have been saved.', 'success')
+            except Exception as e:
+                # If the table doesn't exist yet, show info but continue
+                flash('Account created successfully! To enable personalized features, please create the user_preferences table in Supabase.', 'info')
+                print(f"User preferences error: {e}")
+            
             # Log in the new user
             user = User(new_user)
             login_user(user)
@@ -690,12 +704,89 @@ def profile():
         draw_result = supabase.table('user_draws').select('*').eq('user_id', current_user.id).order('drawn_at', desc=True).limit(10).execute()
         draw_history = draw_result.data or []
         
+        # Load preferences for checkbox state
+        topics = []
+        try:
+            pref_result = supabase.table('user_preferences').select('topics').eq('user_id', current_user.id).single().execute()
+            if pref_result.data:
+                topics = pref_result.data.get('topics') or []
+        except Exception as e:
+            # Fallback to email-based lookup
+            try:
+                pref_result = supabase.table('user_preferences').select('topics').eq('email', current_user.email).single().execute()
+                if pref_result.data:
+                    topics = pref_result.data.get('topics') or []
+            except Exception:
+                topics = []
+            print(f"User preferences lookup error: {e}")
         return render_template('profile.html', 
                              user=current_user,
                              articles=user_articles,
-                             draw_history=draw_history)
+                             draw_history=draw_history,
+                             topics=topics)
     except Exception as e:
         flash(f'Error loading profile: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/update-preferences', methods=['POST'])
+@login_required
+def update_preferences():
+    """Update the current user's topic preferences"""
+    try:
+        if not supabase:
+            flash('Database not configured', 'error')
+            return redirect(url_for('profile'))
+        topics = request.form.getlist('topics')
+        if not topics:
+            flash('Please select at least one topic', 'error')
+            return redirect(url_for('profile'))
+        supabase.table('user_preferences').upsert({
+            'user_id': current_user.id,
+            'email': current_user.email,
+            'topics': topics,
+            'updated_at': datetime.now().isoformat()
+        }).execute()
+        flash('Preferences updated', 'success')
+    except Exception as e:
+        flash(f'Could not save preferences: {str(e)}', 'error')
+    return redirect(url_for('profile'))
+
+@app.route('/for-you')
+@login_required
+def for_you():
+    """Personalized page showing articles matching user's interests"""
+    try:
+        if not supabase:
+            flash('Database not configured', 'error')
+            return redirect(url_for('home'))
+        # Load preferences
+        prefs = None
+        try:
+            pref_result = supabase.table('user_preferences').select('topics').eq('user_id', current_user.id).single().execute()
+            prefs = pref_result.data
+        except Exception as e:
+            # Fallback to email-based lookup
+            try:
+                pref_result = supabase.table('user_preferences').select('topics').eq('email', current_user.email).single().execute()
+                prefs = pref_result.data
+            except Exception:
+                prefs = None
+            print(f"For You preferences lookup error: {e}")
+        topics = (prefs and prefs.get('topics')) or []
+        articles = []
+        if topics:
+            # Fetch recent articles in preferred categories
+            result = supabase.table('articles').select('*').in_('category', topics).order('created_at', desc=True).limit(20).execute()
+            articles = result.data or []
+        else:
+            flash('Set your interests on your profile to personalize your feed.', 'info')
+        return render_template('for_you.html', 
+                             topics=topics,
+                             articles=articles,
+                             get_category_icon=get_category_icon,
+                             format_date=format_date)
+    except Exception as e:
+        flash(f'Error loading For You: {str(e)}', 'error')
         return redirect(url_for('home'))
 
 @app.route('/categories')
