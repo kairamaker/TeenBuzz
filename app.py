@@ -234,7 +234,7 @@ def home():
             article_categories = set(article['category'] for article in all_articles_combined)
             categories_with_articles = [cat for cat in NEWS_CATEGORIES if cat in article_categories]
         
-        return render_template('index.html', 
+        return render_template('index_modern.html', 
                              today_articles=recent_articles,
                              older_recent_articles=older_recent_articles,
                              all_articles=all_articles,
