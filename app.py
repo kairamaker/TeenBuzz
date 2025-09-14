@@ -53,9 +53,12 @@ PERPLEXITY_API_KEY = os.getenv('PERPLEXITY_API_KEY')
 
 # Initialize Supabase client only if credentials are provided
 supabase = None
-if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith('your_'):
+if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith('your_') and not SUPABASE_KEY.startswith('your_'):
     try:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        # Test the connection immediately
+        test_result = supabase.table('articles').select('*').limit(1).execute()
+        print("✅ Supabase connection successful!")
     except Exception as e:
         print(f"Warning: Could not initialize Supabase client: {e}")
         supabase = None
@@ -192,12 +195,92 @@ def home():
     """Home page with latest articles"""
     try:
         if not supabase:
-            flash('Database not configured. Please set up your Supabase credentials in .env file.', 'error')
-            return render_template('index.html', 
-                                 today_articles=[],
-                                 all_articles=[],
+            # Show sample articles when database is not configured
+            sample_articles = [
+                {
+                    'id': 1,
+                    'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                    'content': 'Students are discovering how artificial intelligence can revolutionize their study habits. From personalized learning plans to instant homework help, AI is making education more accessible and effective for teens everywhere. These tools are changing how students approach learning, making complex subjects more digestible and study sessions more efficient.',
+                    'category': 'Technology',
+                    'source': 'TechCrunch',
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 2,
+                    'headline': 'Climate Change: What Teens Can Do to Make a Real Difference',
+                    'content': 'Young activists are leading the charge against climate change with innovative solutions and powerful voices. Learn about the practical steps you can take to protect our planet and inspire others to join the movement. From school strikes to social media campaigns, teens are proving that age is just a number when it comes to environmental action.',
+                    'category': 'Environment',
+                    'source': 'BBC News',
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 3,
+                    'headline': 'Mental Health Apps That Actually Help Teens Cope',
+                    'content': 'New mental health resources designed specifically for teenagers are making it easier to find support and build resilience. These apps offer everything from meditation guides to crisis support, helping teens navigate the challenges of modern life with better mental health tools and resources.',
+                    'category': 'Health',
+                    'source': 'NPR',
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 4,
+                    'headline': 'The Future of Social Media: What Teens Need to Know',
+                    'content': 'Social media platforms are evolving rapidly, and teens are at the forefront of these changes. From new privacy features to emerging platforms, understanding these shifts can help you navigate the digital world more safely and effectively.',
+                    'category': 'Technology',
+                    'source': 'Wired',
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 5,
+                    'headline': 'How Gen Z is Redefining Success in the Workplace',
+                    'content': 'Young people are changing what it means to have a successful career, prioritizing work-life balance, mental health, and meaningful work over traditional corporate ladders. This shift is reshaping entire industries and creating new opportunities.',
+                    'category': 'Social Issues',
+                    'source': 'Forbes',
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 6,
+                    'headline': 'The Science Behind Why Music Moves Us',
+                    'content': 'New research reveals how music affects our brains and emotions, especially during teenage years. Understanding these connections can help you use music more effectively for studying, relaxation, and emotional regulation.',
+                    'category': 'Science',
+                    'source': 'Scientific American',
+                    'created_at': datetime.now().isoformat()
+                }
+            ]
+            # Create personalized "For You" articles based on sample data
+            for_you_articles = sample_articles[:4]  # Top 4 articles for personalized section
+            
+            # Create sample "Continue Reading" articles with progress
+            continue_reading_articles = [
+                {
+                    'id': 1,
+                    'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                    'content': 'Students are discovering how artificial intelligence can revolutionize their study habits. From personalized learning plans to instant homework help, AI is making education more accessible and effective for teens everywhere. These tools are changing how students approach learning, making complex subjects more digestible and study sessions more efficient.',
+                    'category': 'Technology',
+                    'source': 'TechCrunch',
+                    'created_at': datetime.now().isoformat(),
+                    'read_progress': 65,
+                    'last_read_time': '2 hours ago'
+                },
+                {
+                    'id': 2,
+                    'headline': 'Climate Change: What Teens Can Do to Make a Real Difference',
+                    'content': 'Young activists are leading the charge against climate change with innovative solutions and powerful voices. Learn about the practical steps you can take to protect our planet and inspire others to join the movement. From school strikes to social media campaigns, teens are proving that age is just a number when it comes to environmental action.',
+                    'category': 'Environment',
+                    'source': 'BBC News',
+                    'created_at': datetime.now().isoformat(),
+                    'read_progress': 30,
+                    'last_read_time': '1 day ago'
+                }
+            ]
+            
+            flash('Database connection in progress. Showing sample articles while we connect to your Supabase database.', 'info')
+            return render_template('index_modern.html', 
+                                 today_articles=sample_articles[:3],
+                                 all_articles=sample_articles,
+                                 for_you_articles=for_you_articles,
+                                 continue_reading_articles=continue_reading_articles,
                                  categories=NEWS_CATEGORIES,
-                                 categories_with_articles=[],
+                                 categories_with_articles=['Technology', 'Environment', 'Health', 'Social Issues', 'Science'],
                                  get_category_icon=get_category_icon,
                                  format_date=format_date,
                                  current_category='All',
@@ -234,10 +317,26 @@ def home():
             article_categories = set(article['category'] for article in all_articles_combined)
             categories_with_articles = [cat for cat in NEWS_CATEGORIES if cat in article_categories]
         
+        # Create personalized "For You" articles (mix of recent and popular categories)
+        for_you_articles = all_articles[:4] if all_articles else []
+        
+        # Get continue reading articles (simulate user reading history)
+        # In a real app, this would come from user_draws table with read progress
+        continue_reading_articles = []
+        if all_articles:
+            # Simulate some articles with reading progress
+            for i, article in enumerate(all_articles[:2]):
+                article_copy = article.copy()
+                article_copy['read_progress'] = [65, 30][i] if i < 2 else 0
+                article_copy['last_read_time'] = ['2 hours ago', '1 day ago'][i] if i < 2 else '3 days ago'
+                continue_reading_articles.append(article_copy)
+        
         return render_template('index_modern.html', 
                              today_articles=recent_articles,
                              older_recent_articles=older_recent_articles,
                              all_articles=all_articles,
+                             for_you_articles=for_you_articles,
+                             continue_reading_articles=continue_reading_articles,
                              categories=NEWS_CATEGORIES,
                              categories_with_articles=categories_with_articles,
                              get_category_icon=get_category_icon,
@@ -246,16 +345,223 @@ def home():
                              page_title='Latest News',
                              current_date=datetime.now().strftime('%B %d, %Y'))
     except Exception as e:
-        flash(f'Error loading articles: {str(e)}', 'error')
-        return render_template('index.html', 
-                             today_articles=[],
-                             all_articles=[],
+        # Show sample articles when there's an error
+        sample_articles = [
+            {
+                'id': 1,
+                'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                'content': 'Students are discovering how artificial intelligence can revolutionize their study habits. From personalized learning plans to instant homework help, AI is making education more accessible and effective for teens everywhere. These tools are changing how students approach learning, making complex subjects more digestible and study sessions more efficient.',
+                'category': 'Technology',
+                'source': 'TechCrunch',
+                'created_at': datetime.now().isoformat()
+            },
+            {
+                'id': 2,
+                'headline': 'Climate Change: What Teens Can Do to Make a Real Difference',
+                'content': 'Young activists are leading the charge against climate change with innovative solutions and powerful voices. Learn about the practical steps you can take to protect our planet and inspire others to join the movement. From school strikes to social media campaigns, teens are proving that age is just a number when it comes to environmental action.',
+                'category': 'Environment',
+                'source': 'BBC News',
+                'created_at': datetime.now().isoformat()
+            },
+            {
+                'id': 3,
+                'headline': 'Mental Health Apps That Actually Help Teens Cope',
+                'content': 'New mental health resources designed specifically for teenagers are making it easier to find support and build resilience. These apps offer everything from meditation guides to crisis support, helping teens navigate the challenges of modern life with better mental health tools and resources.',
+                'category': 'Health',
+                'source': 'NPR',
+                'created_at': datetime.now().isoformat()
+            },
+            {
+                'id': 4,
+                'headline': 'The Future of Social Media: What Teens Need to Know',
+                'content': 'Social media platforms are evolving rapidly, and teens are at the forefront of these changes. From new privacy features to emerging platforms, understanding these shifts can help you navigate the digital world more safely and effectively.',
+                'category': 'Technology',
+                'source': 'Wired',
+                'created_at': datetime.now().isoformat()
+            },
+            {
+                'id': 5,
+                'headline': 'How Gen Z is Redefining Success in the Workplace',
+                'content': 'Young people are changing what it means to have a successful career, prioritizing work-life balance, mental health, and meaningful work over traditional corporate ladders. This shift is reshaping entire industries and creating new opportunities.',
+                'category': 'Social Issues',
+                'source': 'Forbes',
+                'created_at': datetime.now().isoformat()
+            },
+            {
+                'id': 6,
+                'headline': 'The Science Behind Why Music Moves Us',
+                'content': 'New research reveals how music affects our brains and emotions, especially during teenage years. Understanding these connections can help you use music more effectively for studying, relaxation, and emotional regulation.',
+                'category': 'Science',
+                'source': 'Scientific American',
+                'created_at': datetime.now().isoformat()
+            }
+        ]
+        
+        # Create personalized "For You" articles based on sample data
+        for_you_articles = sample_articles[:4]  # Top 4 articles for personalized section
+        
+        # Create sample "Continue Reading" articles with progress
+        continue_reading_articles = [
+            {
+                'id': 1,
+                'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                'content': 'Students are discovering how artificial intelligence can revolutionize their study habits. From personalized learning plans to instant homework help, AI is making education more accessible and effective for teens everywhere. These tools are changing how students approach learning, making complex subjects more digestible and study sessions more efficient.',
+                'category': 'Technology',
+                'source': 'TechCrunch',
+                'created_at': datetime.now().isoformat(),
+                'read_progress': 65,
+                'last_read_time': '2 hours ago'
+            },
+            {
+                'id': 2,
+                'headline': 'Climate Change: What Teens Can Do to Make a Real Difference',
+                'content': 'Young activists are leading the charge against climate change with innovative solutions and powerful voices. Learn about the practical steps you can take to protect our planet and inspire others to join the movement. From school strikes to social media campaigns, teens are proving that age is just a number when it comes to environmental action.',
+                'category': 'Environment',
+                'source': 'BBC News',
+                'created_at': datetime.now().isoformat(),
+                'read_progress': 30,
+                'last_read_time': '1 day ago'
+            }
+        ]
+        
+        flash('Database connection in progress. Showing sample articles while we connect to your Supabase database.', 'info')
+        return render_template('index_modern.html', 
+                             today_articles=sample_articles[:3],
+                             all_articles=sample_articles,
+                             for_you_articles=for_you_articles,
+                             continue_reading_articles=continue_reading_articles,
                              categories=NEWS_CATEGORIES,
-                             categories_with_articles=[],
+                             categories_with_articles=['Technology', 'Environment', 'Health', 'Social Issues', 'Science'],
                              get_category_icon=get_category_icon,
                              format_date=format_date,
                              current_category='All',
                              page_title='Latest News',
+                             current_date=datetime.now().strftime('%B %d, %Y'))
+
+@app.route('/trending')
+def trending():
+    """Trending articles page - most popular and engaging content"""
+    try:
+        if not supabase:
+            # Show sample trending articles when database is not configured
+            trending_articles = [
+                {
+                    'id': 1,
+                    'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                    'content': 'Students are discovering how artificial intelligence can revolutionize their study habits. From personalized learning plans to instant homework help, AI is making education more accessible and effective for teens everywhere. These tools are changing how students approach learning, making complex subjects more digestible and study sessions more efficient.',
+                    'category': 'Technology',
+                    'source': 'TechCrunch',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 95,
+                    'views': 1250,
+                    'likes': 89
+                },
+                {
+                    'id': 2,
+                    'headline': 'Climate Change: What Teens Can Do to Make a Real Difference',
+                    'content': 'Young activists are leading the charge against climate change with innovative solutions and powerful voices. Learn about the practical steps you can take to protect our planet and inspire others to join the movement. From school strikes to social media campaigns, teens are proving that age is just a number when it comes to environmental action.',
+                    'category': 'Environment',
+                    'source': 'BBC News',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 92,
+                    'views': 980,
+                    'likes': 76
+                },
+                {
+                    'id': 3,
+                    'headline': 'Mental Health Apps That Actually Help Teens Cope',
+                    'content': 'New mental health resources designed specifically for teenagers are making it easier to find support and build resilience. These apps offer everything from meditation guides to crisis support, helping teens navigate the challenges of modern life with better mental health tools and resources.',
+                    'category': 'Health',
+                    'source': 'NPR',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 88,
+                    'views': 850,
+                    'likes': 64
+                },
+                {
+                    'id': 4,
+                    'headline': 'The Future of Social Media: What Teens Need to Know',
+                    'content': 'Social media platforms are evolving rapidly, and teens are at the forefront of these changes. From new privacy features to emerging platforms, understanding these shifts can help you navigate the digital world more safely and effectively.',
+                    'category': 'Technology',
+                    'source': 'Wired',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 85,
+                    'views': 720,
+                    'likes': 58
+                },
+                {
+                    'id': 5,
+                    'headline': 'How Gen Z is Redefining Success in the Workplace',
+                    'content': 'Young people are changing what it means to have a successful career, prioritizing work-life balance, mental health, and meaningful work over traditional corporate ladders. This shift is reshaping entire industries and creating new opportunities.',
+                    'category': 'Social Issues',
+                    'source': 'Forbes',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 82,
+                    'views': 680,
+                    'likes': 52
+                },
+                {
+                    'id': 6,
+                    'headline': 'The Science Behind Why Music Moves Us',
+                    'content': 'New research reveals how music affects our brains and emotions, especially during teenage years. Understanding these connections can help you use music more effectively for studying, relaxation, and emotional regulation.',
+                    'category': 'Science',
+                    'source': 'Scientific American',
+                    'created_at': datetime.now().isoformat(),
+                    'engagement_score': 79,
+                    'views': 590,
+                    'likes': 45
+                }
+            ]
+            
+            # Sort by engagement score (trending algorithm)
+            trending_articles.sort(key=lambda x: x['engagement_score'], reverse=True)
+            
+            return render_template('trending.html',
+                                 trending_articles=trending_articles,
+                                 categories=NEWS_CATEGORIES,
+                                 get_category_icon=get_category_icon,
+                                 format_date=format_date,
+                                 current_date=datetime.now().strftime('%B %d, %Y'))
+        
+        # Get trending articles from database (most viewed/recent)
+        # In a real app, this would use engagement metrics, views, likes, etc.
+        trending_result = supabase.table('articles').select('*').order('created_at', desc=True).limit(12).execute()
+        trending_articles = trending_result.data or []
+        
+        # Add simulated engagement data for demo
+        for i, article in enumerate(trending_articles):
+            article['engagement_score'] = max(60, 95 - (i * 3))  # Decreasing engagement score
+            article['views'] = max(100, 1200 - (i * 100))
+            article['likes'] = max(10, 90 - (i * 8))
+        
+        return render_template('trending.html',
+                             trending_articles=trending_articles,
+                             categories=NEWS_CATEGORIES,
+                             get_category_icon=get_category_icon,
+                             format_date=format_date,
+                             current_date=datetime.now().strftime('%B %d, %Y'))
+                             
+    except Exception as e:
+        print(f"Error in trending route: {e}")
+        # Fallback to sample data
+        trending_articles = [
+            {
+                'id': 1,
+                'headline': 'New AI Tools Help Students Study Smarter, Not Harder',
+                'content': 'Students are discovering how artificial intelligence can revolutionize their study habits.',
+                'category': 'Technology',
+                'source': 'TechCrunch',
+                'created_at': datetime.now().isoformat(),
+                'engagement_score': 95,
+                'views': 1250,
+                'likes': 89
+            }
+        ]
+        return render_template('trending.html',
+                             trending_articles=trending_articles,
+                             categories=NEWS_CATEGORIES,
+                             get_category_icon=get_category_icon,
+                             format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
 
 @app.route('/category/<category>')

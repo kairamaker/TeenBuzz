@@ -8,6 +8,297 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* Modern TeenBuzz Design - Matching index_modern.html */
+        :root {
+            --primary-blue: #1e40af;
+            --secondary-blue: #3b82f6;
+            --accent-orange: #f97316;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --bg-white: #ffffff;
+            --bg-light: #f9fafb;
+            --border-light: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-white);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-blue);
+        }
+
+        .btn-secondary {
+            background: var(--accent-orange);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #ea580c;
+        }
+
+        /* Article Page Styles */
+        .article-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .article-full {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .article-header {
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-white) 100%);
+        }
+
+        .breadcrumb {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+
+        .breadcrumb a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .article-category {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .article-date {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .publish-date {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .article-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+            margin: 0;
+        }
+
+        .article-image-full {
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+        }
+
+        .article-body {
+            padding: 2rem;
+        }
+
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+            margin-bottom: 2rem;
+        }
+
+        .article-relevance {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .article-relevance h3 {
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-orange);
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .article-page {
+                padding: 1rem;
+            }
+
+            .article-header h1 {
+                font-size: 2rem;
+            }
+
+            .article-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <style>
         /* Modal Styles */
         .modal {
             display: none;
@@ -201,82 +492,89 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="container">
-            <div class="nav">
-                <div class="logo">
-                    <a href="{{ url_for('home') }}">
-                        <h1>TeenBuzz</h1>
-                        <span class="tagline">News That Matters</span>
+        <div class="nav">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">T</div>
+                <span class="logo-text">TeenBuzz</span>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('categories_page') }}" class="nav-link">Categories</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('for_you') }}" class="nav-link">For You</a>
+                {% endif %}
+                <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
+            </nav>
+
+            <div class="user-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('profile') }}" class="btn-primary">
+                        <i class="fas fa-user"></i>
+                        Profile
                     </a>
-                </div>
-                <nav class="nav-menu">
-                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
-                    <a href="{{ url_for('home') }}#categories" class="nav-link">Categories</a>
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
-                        <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
-                    {% else %}
-                        <a href="{{ url_for('login') }}" class="nav-link">Login</a>
-                    {% endif %}
-                </nav>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-primary">
+                        <i class="fas fa-user"></i>
+                        Login
+                    </a>
+                {% endif %}
             </div>
         </div>
     </header>
 
     <!-- Article Content -->
     <main class="article-page">
-        <div class="container">
-            <article class="article-full">
-                <header class="article-header">
-                    <div class="breadcrumb">
-                        <a href="{{ url_for('home') }}">Home</a> &gt; 
-                        <a href="{{ url_for('category_articles', category=article.category) }}">{{ article.category }}</a> &gt;
-                        <span>Article</span>
-                    </div>
-                    
-                    <div class="article-meta">
-                        <span class="article-category">{{ article.category }}</span>
-                        <span class="article-date">{{ format_date(article.created_at) }}</span>
-                        {% if article.publish_date %}
-                        <span class="publish-date">Published: {{ article.publish_date }}</span>
-                        {% endif %}
-                    </div>
-                    
-                    <h1>{{ article.headline }}</h1>
-                </header>
-
-                <div class="article-image-full">
-                    <i class="fas fa-newspaper"></i>
+        <article class="article-full">
+            <header class="article-header">
+                <div class="breadcrumb">
+                    <a href="{{ url_for('home') }}">Home</a> &gt; 
+                    <a href="{{ url_for('category_articles', category=article.category) }}">{{ article.category }}</a> &gt;
+                    <span>Article</span>
                 </div>
-
-                <div class="article-body">
-                    <div class="article-content">
-                        {{ article.content | replace('\n', '<br>') | safe }}
-                    </div>
-
-                    {% if article.relevance %}
-                    <div class="article-relevance">
-                        <h3><i class="fas fa-lightbulb"></i> Why This Matters to You:</h3>
-                        <p>{{ article.relevance }}</p>
-                    </div>
+                
+                <div class="article-meta">
+                    <span class="article-category">{{ article.category }}</span>
+                    <span class="article-date">{{ format_date(article.created_at) }}</span>
+                    {% if article.publish_date %}
+                    <span class="publish-date">Published: {{ article.publish_date }}</span>
                     {% endif %}
-
-                    <div class="article-actions">
-                        <a href="{{ url_for('category_articles', category=article.category) }}" class="btn-secondary">
-                            <i class="fas fa-arrow-left"></i> More {{ article.category }} News
-                        </a>
-                        {% if article.original_url %}
-                        <button class="btn-secondary" onclick="openSourceModal()">
-                            <i class="fas fa-external-link-alt"></i> Read Original
-                        </button>
-                        {% endif %}
-                        <a href="{{ url_for('home') }}" class="btn-primary">
-                            <i class="fas fa-home"></i> Back to Home
-                        </a>
-                    </div>
                 </div>
-            </article>
-        </div>
+                
+                <h1>{{ article.headline }}</h1>
+            </header>
+
+            <div class="article-image-full">
+                <i class="fas fa-newspaper"></i>
+            </div>
+
+            <div class="article-body">
+                <div class="article-content">
+                    {{ article.content | replace('\n', '<br>') | safe }}
+                </div>
+
+                {% if article.relevance %}
+                <div class="article-relevance">
+                    <h3><i class="fas fa-lightbulb"></i> Why This Matters to You:</h3>
+                    <p>{{ article.relevance }}</p>
+                </div>
+                {% endif %}
+
+                <div class="article-actions">
+                    <a href="{{ url_for('category_articles', category=article.category) }}" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> More {{ article.category }} News
+                    </a>
+                    {% if article.original_url %}
+                    <button class="btn-secondary" onclick="openSourceModal()">
+                        <i class="fas fa-external-link-alt"></i> Read Original
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('home') }}" class="btn-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </article>
     </main>
 
     <!-- Source Modal -->
@@ -316,27 +614,25 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>TeenBuzz</h4>
-                    <p>Making news accessible and engaging for teenagers worldwide.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <a href="{{ url_for('home') }}">Home</a>
-                    <a href="{{ url_for('home') }}#categories">Categories</a>
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('profile') }}">Profile</a>
-                    {% else %}
-                        <a href="{{ url_for('login') }}">Login</a>
-                    {% endif %}
-                </div>
-                <div class="footer-section">
-                    <h4>Connect</h4>
-                    <p>Built during summer internship 2025</p>
-                    <p>Pure Python Backend</p>
-                </div>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>TeenBuzz</h4>
+                <p>Making news accessible and engaging for teenagers worldwide.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('categories_page') }}">Categories</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('profile') }}">Profile</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <p>Built during summer internship 2025</p>
+                <p>Pure Python Backend</p>
             </div>
         </div>
     </footer>
