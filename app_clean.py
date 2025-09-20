@@ -88,31 +88,6 @@ def format_date(date_string):
     except:
         return 'Recent'
 
-def enhanced_search_filter(articles, query):
-    """Enhanced search function that matches individual words in query"""
-    if not query:
-        return articles
-    
-    query_lower = query.lower()
-    query_words = query_lower.split()
-    
-    def article_matches_query(article):
-        headline = article.get('headline', '').lower()
-        content = article.get('content', '').lower()
-        tags = article.get('tags', '').lower()
-        category = article.get('category', '').lower()
-        
-        # Check if any query word matches in headline, content, tags, or category
-        for word in query_words:
-            if (word in headline or 
-                word in content or 
-                word in tags or 
-                word in category):
-                return True
-        return False
-    
-    return [a for a in articles if article_matches_query(a)]
-
 def get_sample_articles():
     """Get sample articles for fallback"""
     return [
@@ -216,7 +191,7 @@ def get_articles_from_db(limit=None, category=None, order_by='created_at', desc=
             return local_db.execute_query(query, tuple(params))
     else:
         # Use Supabase
-            if not supabase:
+        if not supabase:
             return []
         
         query = supabase.table('articles').select('*')
@@ -278,7 +253,7 @@ def home():
                 article['read_progress'] = 65
                 article['last_read_time'] = '2 hours ago'
         
-        return render_template('index_modern.html', 
+        return render_template('index_modern.html',
                              articles=articles,
                              for_you_articles=for_you_articles,
                              continue_reading_articles=continue_reading_articles,
@@ -376,9 +351,9 @@ def search_articles():
             flash(f'✅ Using local database: {get_database_status()}', 'success')
             articles = get_articles_from_db(limit=20)
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower() or query.lower() in a.get('tags', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
                 
@@ -387,9 +362,9 @@ def search_articles():
             flash('✅ Connected to Supabase database', 'success')
             articles = get_articles_from_db(limit=20)
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower() or query.lower() in a.get('tags', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
         else:
@@ -397,9 +372,9 @@ def search_articles():
             flash('Using sample search data while database connection is being resolved.', 'info')
             articles = get_sample_articles()
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower() or query.lower() in a.get('tags', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
         
@@ -453,7 +428,7 @@ def categories_page():
                              get_category_icon=get_category_icon,
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
-        
+    
     except Exception as e:
         print(f"Error in categories route: {e}")
         # Fallback to sample data on any error
@@ -495,7 +470,7 @@ def login():
             # Redirect to next page or home
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('home'))
-            else:
+        else:
             flash(message, 'error')
     
     return render_template('login.html')
@@ -553,7 +528,7 @@ def view_article(article_id):
                 article = articles[0]
             else:
                 flash('Article not found', 'error')
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
         elif supabase:
             # Use Supabase
             result = supabase.table('articles').select('*').eq('id', article_id).execute()
@@ -561,7 +536,7 @@ def view_article(article_id):
                 article = result.data[0]
             else:
                 flash('Article not found', 'error')
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
         else:
             # Fallback to sample data
             sample_articles = get_sample_articles()
@@ -590,4 +565,4 @@ def inject_auth():
     }
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5002) 
+    app.run(debug=True, host='0.0.0.0', port=5002)

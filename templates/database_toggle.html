@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Toggle - TeenBuzz Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1e40af;
+            --secondary-blue: #3b82f6;
+            --accent-orange: #f97316;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --bg-white: #ffffff;
+            --bg-light: #f9fafb;
+            --border-light: #e5e7eb;
+            --success-green: #10b981;
+            --warning-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .status-local {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .status-cloud {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .database-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .database-option {
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .database-option:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .database-option.active {
+            border-color: var(--primary-blue);
+            background: var(--bg-light);
+        }
+
+        .database-option h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .database-option p {
+            color: var(--text-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-blue);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning-yellow);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-section {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .info-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .info-section li {
+            margin-bottom: 0.5rem;
+            color: var(--text-gray);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--primary-blue);
+        }
+
+        @media (max-width: 768px) {
+            .database-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">T</div>
+                <span class="logo-text">TeenBuzz Admin</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('admin_panel') }}" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="card">
+            <h1>Database Toggle</h1>
+            <p>Switch between local SQLite database and cloud Supabase database</p>
+            
+            <!-- Current Status -->
+            <div class="status-badge {% if 'LOCAL' in current_database %}status-local{% else %}status-cloud{% endif %}">
+                <i class="fas fa-database"></i>
+                Currently using: {{ current_database }}
+            </div>
+
+            <!-- Database Options -->
+            <div class="database-options">
+                <div class="database-option {% if 'LOCAL' in current_database %}active{% endif %}">
+                    <h3><i class="fas fa-laptop"></i> Local Database</h3>
+                    <p>SQLite database stored locally on your machine. Fast and reliable for development.</p>
+                    {% if 'LOCAL' not in current_database %}
+                        <a href="{{ url_for('switch_to_local') }}" class="btn btn-success">
+                            <i class="fas fa-toggle-on"></i>
+                            Switch to Local
+                        </a>
+                    {% else %}
+                        <button class="btn btn-success" disabled>
+                            <i class="fas fa-check"></i>
+                            Currently Active
+                        </button>
+                    {% endif %}
+                </div>
+
+                <div class="database-option {% if 'CLOUD' in current_database %}active{% endif %}">
+                    <h3><i class="fas fa-cloud"></i> Cloud Database</h3>
+                    <p>Supabase cloud database. Requires internet connection and DNS resolution.</p>
+                    {% if 'CLOUD' not in current_database %}
+                        <a href="{{ url_for('switch_to_cloud') }}" class="btn btn-primary">
+                            <i class="fas fa-toggle-on"></i>
+                            Switch to Cloud
+                        </a>
+                    {% else %}
+                        <button class="btn btn-primary" disabled>
+                            <i class="fas fa-check"></i>
+                            Currently Active
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Information Section -->
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Database Information</h3>
+                <ul>
+                    <li><strong>Local Database:</strong> Stored in <code>teenbuzz_local.db</code> file</li>
+                    <li><strong>Cloud Database:</strong> Supabase project with URL from .env file</li>
+                    <li><strong>Data Sync:</strong> Both databases contain the same sample data</li>
+                    <li><strong>Performance:</strong> Local database is faster for development</li>
+                    <li><strong>Reliability:</strong> Local database works offline</li>
+                </ul>
+            </div>
+
+            <!-- Actions -->
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{{ url_for('admin_panel') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Admin Panel
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

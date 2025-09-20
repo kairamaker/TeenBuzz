@@ -1,0 +1,6 @@
+{
+  "use_local": true,
+  "local_db_path": "teenbuzz_local.db",
+  "supabase_url": "",
+  "supabase_key": ""
+}

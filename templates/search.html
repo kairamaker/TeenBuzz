@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Modern TeenBuzz Design - Matching index_modern.html */
+        :root {
+            --primary-blue: #1e40af;
+            --secondary-blue: #3b82f6;
+            --accent-orange: #f97316;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --bg-white: #ffffff;
+            --bg-light: #f9fafb;
+            --border-light: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-white);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-blue);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-blue);
+        }
+
+        /* Search Hero */
+        .search-hero {
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            color: white;
+        }
+
+        .search-hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .search-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .search-hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        /* Search Form */
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-btn {
+            background: var(--accent-orange);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #ea580c;
+        }
+
+        /* Filters */
+        .filters {
+            background: var(--bg-light);
+            padding: 2rem;
+        }
+
+        .filters-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .clear-filters {
+            background: transparent;
+            color: var(--text-gray);
+            border: 1px solid var(--border-light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .clear-filters:hover {
+            background: var(--text-gray);
+            color: white;
+        }
+
+        /* Results */
+        .results {
+            padding: 3rem 2rem;
+        }
+
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .results-count {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+        }
+
+        .results-count strong {
+            color: var(--primary-blue);
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .sort-label {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Articles Grid */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .article-image {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .category-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary-blue);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .article-content {
+            padding: 1.5rem;
+        }
+
+        .article-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .article-excerpt {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            background: var(--bg-light);
+            color: var(--text-gray);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* No Results */
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-gray);
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--border-light);
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .no-results p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .suggestion {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .suggestion:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-orange);
+        }
+
+        .footer-section p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-hero h1 {
+                font-size: 2rem;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: auto;
+            }
+
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav">
+            <a href="{{ url_for('home') }}" class="logo">
+                <div class="logo-icon">T</div>
+                <span class="logo-text">TeenBuzz</span>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('categories') }}" class="nav-link">Categories</a>
+                <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('for_you') }}" class="nav-link">For You</a>
+                {% endif %}
+            </nav>
+
+            <div class="user-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('profile') }}" class="btn-primary">
+                        <i class="fas fa-user"></i>
+                        Profile
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn-primary">
+                        <i class="fas fa-user"></i>
+                        Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Hero -->
+    <section class="search-hero">
+        <div class="search-hero-content">
+            <h1>Search Articles</h1>
+            <p>Find the latest news and stories that matter to you</p>
+            
+            <form class="search-form" method="GET" action="{{ url_for('search_articles') }}">
+                <input type="text" 
+                       name="q" 
+                       class="search-input" 
+                       placeholder="Search for articles, topics, or keywords..."
+                       value="{{ query }}"
+                       autofocus>
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    Search
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+        <div class="filters-container">
+            <form method="GET" action="{{ url_for('search_articles') }}" id="filter-form">
+                <input type="hidden" name="q" value="{{ query }}">
+                
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Category</label>
+                        <select name="category" class="filter-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All Categories</option>
+                            {% for category in available_categories %}
+                                <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                                    {{ category }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Date Published</label>
+                        <select name="date" class="filter-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">Any Time</option>
+                            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                            <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                            <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Sort By</label>
+                        <select name="sort" class="filter-select" onchange="document.getElementById('filter-form').submit()">
+                            <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                            <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                            <option value="alphabetical" {% if sort_by == 'alphabetical' %}selected{% endif %}>Alphabetical</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="clear-filters" onclick="clearFilters()">
+                        <i class="fas fa-times"></i>
+                        Clear Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section class="results">
+        <div class="results-container">
+            <div class="results-header">
+                <div class="results-count">
+                    {% if query %}
+                        Found <strong>{{ total_results }}</strong> articles for "<strong>{{ query }}</strong>"
+                    {% else %}
+                        Showing <strong>{{ total_results }}</strong> articles
+                    {% endif %}
+                </div>
+                
+                <div class="sort-options">
+                    <span class="sort-label">Sort:</span>
+                    <select class="sort-select" onchange="changeSort(this.value)">
+                        <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                        <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                        <option value="alphabetical" {% if sort_by == 'alphabetical' %}selected{% endif %}>Alphabetical</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if articles %}
+                <div class="articles-grid">
+                    {% for article in articles %}
+                    <a href="{{ url_for('view_article', article_id=article.id) }}" class="article-card">
+                        <div class="article-image">
+                            <div class="category-tag">{{ article.category }}</div>
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="article-content">
+                            <h3 class="article-title">{{ article.headline }}</h3>
+                            <p class="article-excerpt">
+                                {% set words = article.content.split()[:25] %}
+                                {{ ' '.join(words) }}{% if article.content.split()|length > 25 %}...{% endif %}
+                            </p>
+                            <div class="article-meta">
+                                <span class="read-time">
+                                    <i class="fas fa-clock"></i>
+                                    {{ (article.content.split()|length / 200)|round(1, 'ceil')|int }} min read
+                                </span>
+                                <span class="article-date">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ format_date(article.created_at) }}
+                                </span>
+                            </div>
+                            {% if article.get('tags') %}
+                                <div class="article-tags">
+                                    {% for tag in article.tags[:3] %}
+                                        <span class="tag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No articles found</h3>
+                    <p>Try adjusting your search terms or filters to find what you're looking for.</p>
+                    <div class="suggestions">
+                        <a href="{{ url_for('search_articles') }}?q=technology" class="suggestion">Technology</a>
+                        <a href="{{ url_for('search_articles') }}?q=environment" class="suggestion">Environment</a>
+                        <a href="{{ url_for('search_articles') }}?q=health" class="suggestion">Health</a>
+                        <a href="{{ url_for('search_articles') }}?q=science" class="suggestion">Science</a>
+                        <a href="{{ url_for('search_articles') }}?q=social issues" class="suggestion">Social Issues</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>TeenBuzz</h4>
+                <p>Making news accessible and engaging for teenagers worldwide.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('categories') }}">Categories</a>
+                <a href="{{ url_for('trending') }}">Trending</a>
+                <a href="{{ url_for('search_articles') }}">Search</a>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <p>Built during summer internship 2025</p>
+                <p>Pure Python Backend</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function clearFilters() {
+            window.location.href = "{{ url_for('search_articles') }}";
+        }
+        
+        function changeSort(sortValue) {
+            const url = new URL(window.location);
+            url.searchParams.set('sort', sortValue);
+            window.location.href = url.toString();
+        }
+    </script>
+</body>
+</html>

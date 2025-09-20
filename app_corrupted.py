@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, url_for, flash, jsonify, session
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from supabase.client import create_client, Client
 import os
 from dotenv import load_dotenv
@@ -9,15 +10,43 @@ import secrets
 import time
 from datetime import datetime, timedelta
 import json
-from threading import Thread
-import threading
+import random
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
+from threading import Thread, Lock
 
 # Load environment variables
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-this-to-something-secure')
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this to a secure secret key
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+
+# User class for Flask-Login
+class User(UserMixin):
+    def __init__(self, user_data):
+        self.id = user_data['id']
+        self.username = user_data['username']
+        self.email = user_data.get('email')
+        self.is_admin = user_data.get('is_admin', False)
+        self.created_at = user_data.get('created_at')
+
+@login_manager.user_loader
+def load_user(user_id):
+    if not supabase:
+        return None
+    try:
+        result = supabase.table('users').select('*').eq('id', user_id).single().execute()
+        if result.data:
+            return User(result.data)
+    except:
+        pass
+    return None
 
 # Supabase configuration
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -35,7 +64,7 @@ try:
         # Use Supabase (cloud)
         if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith('your_') and not SUPABASE_KEY.startswith('your_'):
             print(f"Initializing Supabase client with URL: {SUPABASE_URL}")
-            supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
             # Test the connection
             test_result = supabase.table('articles').select('*').limit(1).execute()
             print("✅ Supabase connection successful!")
@@ -46,72 +75,138 @@ try:
         local_db = db_instance
         print(f"✅ Using local database: {get_database_status()}")
         
-except Exception as e:
+    except Exception as e:
     print(f"Warning: Could not initialize database: {e}")
-    supabase = None
+        supabase = None
     local_db = None
+
+# Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'teenbuzzteam@gmail.com'
+app.config['MAIL_PASSWORD'] = 'wjpq dpoi ureg sdaa'
+app.config['MAIL_DEFAULT_SENDER'] = 'teenbuzzteam@gmail.com'
+mail = Mail(app)
 
 # News categories for teens
 NEWS_CATEGORIES = [
     'Technology',
     'Entertainment',
+    'Sports',
     'Health',
     'Environment',
+    'Education',
     'Social Issues',
     'Science',
-    'Sports',
-    'Politics'
+    'Gaming',
+    'Music'
+]
+
+# News sources for Perplexity to search
+NEWS_SOURCES = [
+    'The Guardian',
+    'New York Times', 
+    'BBC News',
+    'CNN',
+    'Yahoo News',
+    'Teen Vogue',
+    'BuzzFeed',
+    'NPR News'
 ]
 
 def get_category_icon(category):
-    """Get icon for category"""
+    """Get icon class for category"""
     icons = {
         'Technology': 'fas fa-laptop-code',
         'Entertainment': 'fas fa-film',
+        'Sports': 'fas fa-basketball-ball',
         'Health': 'fas fa-heartbeat',
         'Environment': 'fas fa-leaf',
+        'Education': 'fas fa-graduation-cap',
         'Social Issues': 'fas fa-users',
         'Science': 'fas fa-flask',
-        'Sports': 'fas fa-football-ball',
-        'Politics': 'fas fa-vote-yea'
+        'Gaming': 'fas fa-gamepad',
+        'Music': 'fas fa-music'
     }
     return icons.get(category, 'fas fa-newspaper')
 
 def format_date(date_string):
-    """Format date string"""
+    """Format date string to DD/MM/YYYY format"""
     try:
-        if isinstance(date_string, str):
-            date_obj = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
-        else:
-            date_obj = date_string
-        return date_obj.strftime('%B %d, %Y')
+        if not date_string:
+            return "Unknown"
+        # Parse the ISO format date string
+        date_obj = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+        return date_obj.strftime('%d/%m/%Y')
     except:
-        return 'Recent'
+        return "Unknown"
 
-def enhanced_search_filter(articles, query):
-    """Enhanced search function that matches individual words in query"""
-    if not query:
-        return articles
-    
-    query_lower = query.lower()
-    query_words = query_lower.split()
-    
-    def article_matches_query(article):
-        headline = article.get('headline', '').lower()
-        content = article.get('content', '').lower()
-        tags = article.get('tags', '').lower()
-        category = article.get('category', '').lower()
-        
-        # Check if any query word matches in headline, content, tags, or category
-        for word in query_words:
-            if (word in headline or 
-                word in content or 
-                word in tags or 
-                word in category):
-                return True
-        return False
-    
-    return [a for a in articles if article_matches_query(a)]
+@app.context_processor
+def inject_template_helpers():
+    return {
+        'format_date': format_date,
+        'get_category_icon': get_category_icon,
+    }
+
+# Track if we've done an automatic fetch for today to avoid repeated triggers
+_last_auto_fetch_date_lock = Lock()
+_last_auto_fetch_date = None
+
+def _auto_fetch_if_needed_async():
+    """Kick off a background fetch of up to 3 articles if none exist for today."""
+    def _task():
+        global _last_auto_fetch_date
+        try:
+            if not supabase:
+                return
+            # Check if already fetched today
+            today = datetime.now().date()
+            with _last_auto_fetch_date_lock:
+                if _last_auto_fetch_date == today:
+                    return
+            # Check DB for today's articles
+            today_start = datetime.combine(today, datetime.min.time()).isoformat()
+            today_end = datetime.combine(today, datetime.max.time()).isoformat()
+            existing_today = supabase.table('articles').select('id').gte('created_at', today_start).lte('created_at', today_end).execute()
+            if existing_today.data:
+                with _last_auto_fetch_date_lock:
+                    _last_auto_fetch_date = today
+                return
+            # Require Perplexity key
+            if not PERPLEXITY_API_KEY or PERPLEXITY_API_KEY.startswith('your_'):
+                return
+            # Fetch up to 3 articles using existing helper
+            attempts = 0
+            successes = 0
+            used_categories = set()
+            while attempts < 6 and successes < 3:
+                attempts += 1
+                try:
+                    # Pick a category not used yet if possible
+                    remaining = [c for c in NEWS_CATEGORIES if c not in used_categories] or NEWS_CATEGORIES
+                    category = random.choice(remaining)
+                    used_categories.add(category)
+                    article_data = fetch_news_from_perplexity('top stories today', category)
+                    supabase.table('articles').insert({
+                        'headline': article_data['headline'],
+                        'content': article_data['content'],
+                        'source': article_data['source'],
+                        'original_url': article_data.get('original_url', ''),
+                        'category': article_data['category'],
+                        'relevance': article_data['relevance'],
+                        'created_at': datetime.now().isoformat()
+                    }).execute()
+                    successes += 1
+                except Exception:
+                    continue
+            with _last_auto_fetch_date_lock:
+                _last_auto_fetch_date = today
+        except Exception:
+            # Fail silently; homepage should still render
+            pass
+    Thread(target=_task, daemon=True).start()
+
 
 def get_sample_articles():
     """Get sample articles for fallback"""
@@ -124,8 +219,7 @@ def get_sample_articles():
             'source': 'TechCrunch',
             'created_at': datetime.now().isoformat(),
             'views': 1250,
-            'likes': 89,
-            'tags': 'AI,artificial intelligence,education,technology,students,learning,homework,study tools,personalized learning,academic success,teenagers,digital learning,smart studying,educational technology,AI tutoring,learning apps,study habits,academic performance,student life,tech for teens'
+            'likes': 89
         },
         {
             'id': 2,
@@ -135,8 +229,7 @@ def get_sample_articles():
             'source': 'BBC News',
             'created_at': datetime.now().isoformat(),
             'views': 980,
-            'likes': 76,
-            'tags': 'climate,environment,activism,sustainability,youth,global warming,green living,eco-friendly,renewable energy,carbon footprint,environmental justice,climate action,teen activists,earth day,conservation,recycling,green technology,environmental education,planet protection,climate solutions'
+            'likes': 76
         },
         {
             'id': 3,
@@ -146,8 +239,7 @@ def get_sample_articles():
             'source': 'NPR',
             'created_at': datetime.now().isoformat(),
             'views': 850,
-            'likes': 64,
-            'tags': 'mental health,apps,wellness,teenagers,support,anxiety,depression,stress,meditation,mindfulness,therapy,self-care,emotional health,psychological support,teen mental health,wellness apps,mental wellness,coping strategies,emotional support,mental health awareness'
+            'likes': 64
         },
         {
             'id': 4,
@@ -157,8 +249,7 @@ def get_sample_articles():
             'source': 'Wired',
             'created_at': datetime.now().isoformat(),
             'views': 720,
-            'likes': 58,
-            'tags': 'social media,privacy,technology,digital,platforms,Instagram,TikTok,Facebook,Twitter,digital safety,online privacy,cyberbullying,digital citizenship,internet safety,social networking,online presence,digital footprint,social media trends,teen social media,online security'
+            'likes': 58
         },
         {
             'id': 5,
@@ -168,8 +259,7 @@ def get_sample_articles():
             'source': 'Forbes',
             'created_at': datetime.now().isoformat(),
             'views': 680,
-            'likes': 52,
-            'tags': 'career,workplace,gen z,success,work-life balance,jobs,employment,career advice,professional development,workplace culture,remote work,entrepreneurship,career goals,job market,workplace trends,career planning,professional growth,workplace diversity,career success,teen careers'
+            'likes': 52
         },
         {
             'id': 6,
@@ -179,8 +269,7 @@ def get_sample_articles():
             'source': 'Scientific American',
             'created_at': datetime.now().isoformat(),
             'views': 590,
-            'likes': 45,
-            'tags': 'music,science,brain,emotions,research,neuroscience,psychology,music therapy,studying,relaxation,emotional regulation,teen brain,music psychology,neural pathways,music and learning,emotional intelligence,music research,brain development,music benefits,teen psychology'
+            'likes': 45
         }
     ]
 
@@ -216,7 +305,7 @@ def get_articles_from_db(limit=None, category=None, order_by='created_at', desc=
             return local_db.execute_query(query, tuple(params))
     else:
         # Use Supabase
-            if not supabase:
+        if not supabase:
             return []
         
         query = supabase.table('articles').select('*')
@@ -232,6 +321,21 @@ def get_articles_from_db(limit=None, category=None, order_by='created_at', desc=
         
         result = query.execute()
         return result.data or []
+
+def insert_article_to_db(article_data):
+    """Insert article into either local or cloud database"""
+    if local_db:
+        # Use local database
+        with local_db:
+            return local_db.insert('articles', article_data)
+    else:
+        # Use Supabase
+        if not supabase:
+            return None
+        
+        result = supabase.table('articles').insert(article_data).execute()
+        return result.data[0] if result.data else None
+
 
 @app.route('/')
 def home():
@@ -308,6 +412,7 @@ def home():
                              page_title='Latest News',
                              current_date=datetime.now().strftime('%B %d, %Y'))
 
+
 @app.route('/trending')
 def trending():
     """Trending articles page"""
@@ -344,7 +449,7 @@ def trending():
                              get_category_icon=get_category_icon,
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
-    
+        
     except Exception as e:
         print(f"Error in trending route: {e}")
         # Fallback to sample data on any error
@@ -362,6 +467,7 @@ def trending():
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
 
+
 @app.route('/search')
 def search_articles():
     """Search articles page"""
@@ -376,9 +482,9 @@ def search_articles():
             flash(f'✅ Using local database: {get_database_status()}', 'success')
             articles = get_articles_from_db(limit=20)
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
                 
@@ -387,19 +493,19 @@ def search_articles():
             flash('✅ Connected to Supabase database', 'success')
             articles = get_articles_from_db(limit=20)
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
-        else:
+            else:
             # Fallback to sample data
             flash('Using sample search data while database connection is being resolved.', 'info')
             articles = get_sample_articles()
             
-            # Apply filters with enhanced search
+            # Apply filters
             if query:
-                articles = enhanced_search_filter(articles, query)
+                articles = [a for a in articles if query.lower() in a.get('headline', '').lower() or query.lower() in a.get('content', '').lower()]
             if category:
                 articles = [a for a in articles if a.get('category') == category]
         
@@ -431,37 +537,47 @@ def search_articles():
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
 
+
 @app.route('/categories')
 def categories_page():
     """Categories page with filtering options"""
     try:
-        if local_db:
-            # Use local database
-            flash(f'✅ Using local database: {get_database_status()}', 'success')
-            all_articles = get_articles_from_db(limit=50)
-        elif supabase:
-            # Use Supabase
-            flash('✅ Connected to Supabase database', 'success')
-            all_articles = get_articles_from_db(limit=50)
-        else:
-            # Fallback to sample data
-            flash('Database connection in progress. Showing sample articles while we connect to your database.', 'info')
-            all_articles = get_sample_articles()
+        if not supabase:
+            flash('Database connection in progress. DNS propagation may take a few hours. Using sample data until connection is established.', 'info')
+            return render_template('categories.html', 
+                                 categories=NEWS_CATEGORIES,
+                                 articles_by_category={},
+                                 all_articles=[],
+                                 get_category_icon=get_category_icon,
+                                 format_date=format_date,
+                                 current_date=datetime.now().strftime('%B %d, %Y'))
         
-        return render_template('categories.html',
+        # Get all articles grouped by category
+        result = supabase.table('articles').select('*').order('created_at', desc=True).execute()
+        all_articles = result.data or []
+        
+        # Group articles by category
+        articles_by_category = {}
+        for category in NEWS_CATEGORIES:
+            articles_by_category[category] = []
+        
+        for article in all_articles:
+            if article['category'] in articles_by_category:
+                articles_by_category[article['category']].append(article)
+        
+        return render_template('categories.html', 
+                             categories=NEWS_CATEGORIES,
+                             articles_by_category=articles_by_category,
                              all_articles=all_articles,
                              get_category_icon=get_category_icon,
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
-        
     except Exception as e:
-        print(f"Error in categories route: {e}")
-        # Fallback to sample data on any error
-        flash('Using sample data due to an error.', 'warning')
-        all_articles = get_sample_articles()
-        
-        return render_template('categories.html',
-                             all_articles=all_articles,
+        flash(f'Error loading categories: {str(e)}', 'error')
+        return render_template('categories.html', 
+                             categories=NEWS_CATEGORIES,
+                             articles_by_category={},
+                             all_articles=[],
                              get_category_icon=get_category_icon,
                              format_date=format_date,
                              current_date=datetime.now().strftime('%B %d, %Y'))
@@ -542,6 +658,192 @@ def profile():
     user = get_current_user()
     return render_template('profile.html', user=user)
 
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Forgot password page"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        
+        if not email:
+            flash('Please enter your email address', 'error')
+            return render_template('forgot_password.html')
+        
+        try:
+            if auth_manager.db:
+                with auth_manager.db:
+                    # Find user by email
+                    users = auth_manager.db.select('users', where='email = ?', params=(email,))
+                    
+                    if users:
+                        user = users[0]
+                        
+                        # Generate reset token
+                        reset_token = secrets.token_urlsafe(32)
+                        expires_at = datetime.now() + timedelta(hours=1)
+                        
+                        # Store reset token
+                        token_data = {
+                            'user_id': user['id'],
+                            'token': reset_token,
+                            'expires_at': expires_at.isoformat(),
+                            'used': False
+                        }
+                        
+                        auth_manager.db.insert('password_reset_tokens', token_data)
+                        
+                        # Send email (in production, this would actually send)
+                        reset_url = f"{request.url_root}reset-password/{reset_token}"
+                        
+                        try:
+                            # For now, just flash the URL (in production, send email)
+                            flash(f'Password reset link: {reset_url}', 'info')
+                            flash('In production, this would be sent to your email', 'info')
+    except Exception as e:
+                            flash(f'Email sending failed: {str(e)}', 'error')
+                        
+                        flash('If an account with that email exists, a password reset link has been sent.', 'success')
+                    else:
+                        # Don't reveal if email exists or not
+                        flash('If an account with that email exists, a password reset link has been sent.', 'success')
+            else:
+                flash('Database not available', 'error')
+                
+    except Exception as e:
+            flash(f'Error processing request: {str(e)}', 'error')
+    
+            return render_template('forgot_password.html')
+        
+        try:
+            if not supabase:
+                flash('Database not configured', 'error')
+                return render_template('forgot_password.html')
+            
+            # Check if email exists
+            result = supabase.table('users').select('id, username').eq('email', email).single().execute()
+            
+            if result.data:
+                user_id = result.data['id']
+                
+                # Generate secure reset token
+                token = secrets.token_urlsafe(32)
+                expires_at = (datetime.now() + timedelta(hours=1)).isoformat()
+                
+                # Store token in database
+                supabase.table('password_reset_tokens').insert({
+                    'user_id': user_id,
+                    'token': token,
+                    'expires_at': expires_at
+                }).execute()
+                
+                # Generate reset link
+                reset_link = url_for('reset_password', token=token, _external=True)
+                
+                # Send real email
+                msg = Message("TeenBuzz Password Reset", recipients=[email])
+                msg.body = f"""Hello!
+
+To reset your password click the link below:
+
+{reset_link}
+
+This link expires in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Thank you,
+Teen Buzz Team"""
+                mail.send(msg)
+                flash(f'Password reset instructions have been sent to {email}', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Email not found in our system', 'error')
+                
+        except Exception as e:
+            flash(f'Error processing request: {str(e)}', 'error')
+    
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Reset password page"""
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            flash('Please enter both new password and confirm password', 'error')
+            return render_template('reset_password.html', token=token)
+
+        if new_password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return render_template('reset_password.html', token=token)
+
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters long', 'error')
+            return render_template('reset_password.html', token=token)
+
+        try:
+            if not auth_manager.db:
+                flash('Database not available', 'error')
+                return render_template('reset_password.html', token=token)
+
+            # Verify token
+            with auth_manager.db:
+                tokens = auth_manager.db.select('password_reset_tokens', where='token = ? AND used = ?', params=(token, False))
+                
+                if not tokens:
+                    flash('Password reset link is invalid or expired.', 'error')
+                    return render_template('reset_password.html', token=token)
+                
+                token_data = tokens[0]
+                
+                # Check if token is expired
+                expires_at = datetime.fromisoformat(token_data['expires_at'])
+                if datetime.now() > expires_at:
+                    flash('Password reset link has expired.', 'error')
+                    return render_template('reset_password.html', token=token)
+                
+                # Validate new password
+                is_valid, message = auth_manager.validate_password(new_password)
+                if not is_valid:
+                    flash(message, 'error')
+                    return render_template('reset_password.html', token=token)
+                
+                # Update password
+                new_hash = auth_manager.hash_password(new_password)
+                auth_manager.db.update('users', {'password_hash': new_hash}, 'id = ?', (token_data['user_id'],))
+                
+                # Mark token as used
+                auth_manager.db.update('password_reset_tokens', {'used': True}, 'id = ?', (token_data['id'],))
+                
+                flash('Password reset successfully! You can now login with your new password.', 'success')
+                return redirect(url_for('login'))
+                
+        except Exception as e:
+            flash(f'Error resetting password: {str(e)}', 'error')
+            current_time = datetime.now(timezone.utc)
+            
+            if expires_at < current_time:
+                flash('Password reset link has expired.', 'error')
+                return redirect(url_for('forgot_password'))
+
+            user_id = token_data['user_id']
+
+            # Update user password
+            password_hash = generate_password_hash(new_password)
+            supabase.table('users').update({'password_hash': password_hash}).eq('id', user_id).execute()
+
+            # Delete the used token
+            supabase.table('password_reset_tokens').delete().eq('token', token).execute()
+
+            flash('Your password has been updated! You are now able to log in', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f'Error resetting password: {str(e)}', 'error')
+            return render_template('reset_password.html', token=token)
+
+    return render_template('reset_password.html', token=token)
+
 @app.route('/article/<int:article_id>')
 def view_article(article_id):
     """View individual article"""
@@ -553,7 +855,7 @@ def view_article(article_id):
                 article = articles[0]
             else:
                 flash('Article not found', 'error')
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
         elif supabase:
             # Use Supabase
             result = supabase.table('articles').select('*').eq('id', article_id).execute()
@@ -561,7 +863,7 @@ def view_article(article_id):
                 article = result.data[0]
             else:
                 flash('Article not found', 'error')
-            return redirect(url_for('home'))
+                return redirect(url_for('home'))
         else:
             # Fallback to sample data
             sample_articles = get_sample_articles()
@@ -579,6 +881,114 @@ def view_article(article_id):
         print(f"Error viewing article: {e}")
         flash('Error loading article', 'error')
         return redirect(url_for('home'))
+
+@app.route('/draw-article', methods=['POST'])
+@login_required
+def draw_article():
+    """Draw a new article for the logged-in user"""
+    try:
+        if not supabase:
+            return jsonify({'success': False, 'error': 'Database not configured'})
+        
+        # Check rate limiting (max 1 article per 5 minutes)
+        five_minutes_ago = (datetime.now() - timedelta(minutes=5)).isoformat()
+        recent_draws = supabase.table('user_draws').select('*').eq('user_id', current_user.id).gte('drawn_at', five_minutes_ago).execute()
+        
+        if recent_draws.data and len(recent_draws.data) >= 1:
+            return jsonify({'success': False, 'error': 'You can only draw one article every 5 minutes. Please wait a bit!'})
+        
+        # Get random category and topic
+        category = random.choice(NEWS_CATEGORIES)
+        topics = {
+            'Technology': ['AI news', 'social media updates', 'new apps', 'tech trends'],
+            'Entertainment': ['movie releases', 'celebrity news', 'TV shows', 'music news'],
+            'Sports': ['sports highlights', 'athlete news', 'game results', 'sports trends'],
+            'Health': ['teen health', 'wellness tips', 'mental health', 'fitness'],
+            'Environment': ['climate change', 'sustainability', 'environmental news'],
+            'Education': ['school news', 'study tips', 'college prep', 'education trends'],
+            'Social Issues': ['social justice', 'teen activism', 'community news'],
+            'Science': ['scientific discoveries', 'space news', 'research findings'],
+            'Gaming': ['video games', 'esports', 'gaming news', 'new releases'],
+            'Music': ['music releases', 'artist news', 'concert updates']
+        }
+        
+        topic = random.choice(topics.get(category, ['trending news']))
+        
+        # Fetch article from Perplexity
+        article_data = fetch_news_from_perplexity(topic, category)
+        
+        # Store article in database
+        article_result = supabase.table('articles').insert({
+            'headline': article_data['headline'],
+            'content': article_data['content'],
+            'source': article_data['source'],
+            'original_url': article_data.get('original_url', ''),
+            'category': article_data['category'],
+            'relevance': article_data['relevance'],
+            'drawn_by_user_id': current_user.id,
+            'created_at': datetime.now().isoformat()
+        }).execute()
+        
+        new_article = article_result.data[0]
+        
+        # Record the draw
+        supabase.table('user_draws').insert({
+            'user_id': current_user.id,
+            'article_id': new_article['id'],
+            'drawn_at': datetime.now().isoformat()
+        }).execute()
+        
+        return jsonify({
+            'success': True,
+            'article': {
+                'id': new_article['id'],
+                'headline': new_article['headline'],
+                'content': new_article['content'][:200] + '...' if len(new_article['content']) > 200 else new_article['content'],
+                'category': new_article['category'],
+                'source': new_article['source'],
+                'original_url': new_article.get('original_url', ''),
+                'created_at': new_article['created_at']
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/admin/database-toggle')
+def database_toggle():
+    """Database toggle admin page"""
+    if not current_user.is_authenticated or not current_user.is_admin:
+        flash('Admin access required', 'error')
+        return redirect(url_for('home'))
+    
+    current_db = get_database_status()
+    return render_template('database_toggle.html', current_database=current_db)
+
+@app.route('/admin/switch-to-local')
+def switch_to_local():
+    """Switch to local database"""
+    if not current_user.is_authenticated or not current_user.is_admin:
+        flash('Admin access required', 'error')
+        return redirect(url_for('home'))
+    
+    from database_manager import switch_to_local
+    switch_to_local()
+    flash('Switched to local database', 'success')
+    return redirect(url_for('database_toggle'))
+
+@app.route('/admin/switch-to-cloud')
+def switch_to_cloud():
+    """Switch to cloud database"""
+    if not current_user.is_authenticated or not current_user.is_admin:
+        flash('Admin access required', 'error')
+        return redirect(url_for('home'))
+    
+    from database_manager import switch_to_cloud
+    switch_to_cloud()
+    flash('Switched to cloud database', 'success')
+    return redirect(url_for('database_toggle'))
+
 
 # Context processor to make auth functions available in templates
 @app.context_processor
