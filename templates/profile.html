@@ -262,7 +262,7 @@
                 <a href="{{ url_for('home') }}">Home</a>
                 <a href="{{ url_for('trending') }}">Trending</a>
                 <a href="{{ url_for('search_articles') }}">Search</a>
-                <a href="{{ url_for('categories_page') }}">Categories</a>
+                <a href="{{ url_for('categories') }}">Categories</a>
                 
                 {% if is_authenticated %}
                     <a href="{{ url_for('profile') }}" class="login-btn">
@@ -284,11 +284,11 @@
         <div class="card">
             <div class="profile-header">
                 <div class="profile-avatar">
-                    {{ user.username[0].upper() }}
+                    {{ current_user.username[0].upper() }}
                 </div>
-                <h1 class="profile-name">{{ user.username }}</h1>
-                <p class="profile-email">{{ user.email }}</p>
-                {% if user.is_admin %}
+                <h1 class="profile-name">{{ current_user.username }}</h1>
+                <p class="profile-email">{{ current_user.email }}</p>
+                {% if current_user.is_admin %}
                     <span class="admin-badge">
                         <i class="fas fa-crown"></i>
                         Admin
@@ -310,7 +310,7 @@
                     <div class="stat-label">Comments Made</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">{{ user.created_at[:10] }}</div>
+                    <div class="stat-number">Recent</div>
                     <div class="stat-label">Member Since</div>
                 </div>
             </div>
@@ -320,12 +320,12 @@
                     <i class="fas fa-home"></i>
                     Back to Home
                 </a>
-                <a href="#" class="btn btn-secondary">
-                    <i class="fas fa-edit"></i>
-                    Edit Profile
+                <a href="{{ url_for('change_password') }}" class="btn btn-secondary">
+                    <i class="fas fa-key"></i>
+                    Change Password
                 </a>
-                {% if user.is_admin %}
-                    <a href="#" class="btn btn-secondary">
+                {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
                         <i class="fas fa-cog"></i>
                         Admin Panel
                     </a>

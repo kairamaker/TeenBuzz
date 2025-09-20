@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="{{ url_for('home') }}">TeenBuzz</a>
+            </div>
+            <div class="nav-menu">
+                <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('categories') }}" class="nav-link">Categories</a>
+                <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
+                <a href="{{ url_for('search_articles') }}" class="nav-link">Search</a>
+                {% if is_authenticated %}
+                    <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <p>Welcome back, {{ current_user.username }}!</p>
+            </div>
+
+            <!-- Flash Messages -->
+            <div id="flash-messages"></div>
+
+            <!-- Admin Stats -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <p class="stat-number">Coming Soon</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Articles</h3>
+                    <p class="stat-number">10</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Sessions</h3>
+                    <p class="stat-number">Coming Soon</p>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="admin-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-grid">
+                    <a href="{{ url_for('admin_users') }}" class="action-card">
+                        <h3>Manage Users</h3>
+                        <p>View and manage user accounts</p>
+                    </a>
+                    <a href="#" class="action-card">
+                        <h3>Manage Articles</h3>
+                        <p>Create, edit, and delete articles</p>
+                    </a>
+                    <a href="#" class="action-card">
+                        <h3>System Settings</h3>
+                        <p>Configure application settings</p>
+                    </a>
+                    <a href="#" class="action-card">
+                        <h3>Analytics</h3>
+                        <p>View usage statistics and reports</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/flash-messages.js') }}"></script>
+</body>
+</html>

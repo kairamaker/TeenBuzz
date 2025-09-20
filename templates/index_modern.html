@@ -666,7 +666,7 @@
             <nav class="nav-menu">
                 <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('categories') }}" class="nav-link">Categories</a>
-                {% if current_user.is_authenticated %}
+                {% if is_authenticated %}
                     <a href="{{ url_for('for_you') }}" class="nav-link">For You</a>
                 {% endif %}
                 <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
@@ -685,7 +685,7 @@
                 <button class="icon-btn">
                     <i class="fas fa-bookmark"></i>
                 </button>
-                {% if current_user.is_authenticated %}
+                {% if is_authenticated %}
                     <a href="{{ url_for('profile') }}" class="login-btn">
                         <i class="fas fa-user"></i>
                         Profile
@@ -714,7 +714,7 @@
                     <i class="fas fa-bolt"></i>
                     Start Reading
                 </a>
-                {% if current_user.is_authenticated %}
+                {% if is_authenticated %}
                     <a href="{{ url_for('profile') }}" class="btn-secondary">
                         Draw Random Article
                         <i class="fas fa-arrow-right"></i>

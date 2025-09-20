@@ -258,12 +258,13 @@
             
             <nav class="nav-menu">
                 <a href="{{ url_for('home') }}" class="nav-link">Home</a>
-                <a href="{{ url_for('categories_page') }}" class="nav-link">Categories</a>
+                <a href="{{ url_for('categories') }}" class="nav-link">Categories</a>
                 <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
+                <a href="{{ url_for('search_articles') }}" class="nav-link">Search</a>
             </nav>
 
             <div class="user-actions">
-                {% if current_user.is_authenticated %}
+                {% if is_authenticated %}
                     <a href="{{ url_for('profile') }}" class="btn-primary">
                         <i class="fas fa-user"></i>
                         Profile

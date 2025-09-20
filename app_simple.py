@@ -126,7 +126,7 @@ def search_articles():
                              format_date=format_date)
     except Exception as e:
         print(f"Error in search route: {e}")
-        return render_template('search.html', articles=[], query=query, category=category)
+        return render_template('search.html', articles=[], query=query, category=category, format_date=format_date)
 
 @app.route('/categories')
 def categories():
