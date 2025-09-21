@@ -9,6 +9,8 @@ from auth_system_enhanced import (
     auth_manager, login_required, admin_required, 
     get_current_user, is_authenticated, is_admin
 )
+from user_management import user_manager
+from email_system import email_manager
 import sqlite3
 from datetime import datetime
 
@@ -230,12 +232,6 @@ def logout():
     flash(message, 'success')
     return redirect(url_for('home'))
 
-@app.route('/profile')
-@login_required
-def profile():
-    """User profile page"""
-    user = get_current_user()
-    return render_template('profile.html', user=user)
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -278,9 +274,19 @@ def forgot_password():
         success, result = auth_manager.generate_reset_token(email)
         
         if success:
-            # In a real app, you would send an email with the token
-            # For now, we'll just show the token (remove this in production!)
-            flash(f'Reset token generated: {result} (This would be sent via email)', 'info')
+            # Get user info for email
+            user = local_db.select('users', where='email = ?', params=(email,), limit=1)
+            username = user[0]['username'] if user else 'User'
+            
+            # Send email
+            email_success, email_message = email_manager.send_password_reset_email(email, result, username)
+            
+            if email_success:
+                flash('Password reset email sent! Check your inbox.', 'success')
+            else:
+                # Fallback: show token if email fails
+                flash(f'Email failed: {email_message}. Reset token: {result}', 'warning')
+            
             return redirect(url_for('login'))
         else:
             flash(result, 'error')
@@ -329,6 +335,167 @@ def admin_users():
     except Exception as e:
         flash(f'Error loading users: {str(e)}', 'error')
         return render_template('admin_users.html', users=[])
+
+# Enhanced User Management Routes
+@app.route('/dashboard')
+@login_required
+def user_dashboard():
+    """User dashboard"""
+    try:
+        user = get_current_user()
+        user_profile = user_manager.get_user_profile(user['id'])
+        
+        if not user_profile:
+            flash('Error loading user profile', 'error')
+            return redirect(url_for('home'))
+        
+        # Get recommended articles
+        recommended_articles = user_manager.get_recommended_articles(user['id'], limit=6)
+        
+        # Get recent activity (placeholder)
+        recent_activity = [
+            {
+                'icon': 'book-open',
+                'title': 'Read article about AI in education',
+                'time': '2 hours ago'
+            },
+            {
+                'icon': 'heart',
+                'title': 'Liked article about climate change',
+                'time': '1 day ago'
+            },
+            {
+                'icon': 'user-plus',
+                'title': 'Joined TeenBuzz',
+                'time': '3 days ago'
+            }
+        ]
+        
+        return render_template('user_dashboard.html', 
+                             user_stats=user_profile.get('stats', {}),
+                             recommended_articles=recommended_articles,
+                             recent_activity=recent_activity)
+    except Exception as e:
+        flash(f'Error loading dashboard: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/profile')
+@login_required
+def profile():
+    """Enhanced user profile page"""
+    try:
+        user = get_current_user()
+        user_profile = user_manager.get_user_profile(user['id'])
+        
+        if not user_profile:
+            flash('Error loading user profile', 'error')
+            return redirect(url_for('home'))
+        
+        # Get recommended articles
+        recommended_articles = user_manager.get_recommended_articles(user['id'], limit=6)
+        
+        # Get available categories and topics
+        available_categories = user_manager.get_available_categories()
+        available_topics = user_manager.get_available_topics()
+        
+        return render_template('profile_enhanced.html',
+                             user_stats=user_profile.get('stats', {}),
+                             user_preferences=user_profile.get('preferences', {}),
+                             recommended_articles=recommended_articles,
+                             available_categories=available_categories,
+                             available_topics=available_topics)
+    except Exception as e:
+        flash(f'Error loading profile: {str(e)}', 'error')
+        return redirect(url_for('home'))
+
+@app.route('/update-preferences', methods=['POST'])
+@login_required
+def update_preferences():
+    """Update user preferences"""
+    try:
+        user = get_current_user()
+        
+        # Get form data
+        categories = request.form.getlist('categories')
+        topics = request.form.getlist('topics')
+        
+        # Prepare preferences data
+        preferences_data = {
+            'categories': ','.join(categories),
+            'topics': ','.join(topics)
+        }
+        
+        # Update preferences
+        success, message = user_manager.update_user_preferences(user['id'], preferences_data)
+        
+        if success:
+            flash(message, 'success')
+        else:
+            flash(message, 'error')
+        
+        return redirect(url_for('profile') + '?tab=preferences')
+    except Exception as e:
+        flash(f'Error updating preferences: {str(e)}', 'error')
+        return redirect(url_for('profile'))
+
+@app.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    """Update user profile information"""
+    try:
+        user = get_current_user()
+        
+        # Get form data
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        
+        if not username or not email:
+            flash('Please fill in all fields', 'error')
+            return redirect(url_for('profile') + '?tab=settings')
+        
+        # Validate email format
+        valid, msg = auth_manager.validate_email(email)
+        if not valid:
+            flash(msg, 'error')
+            return redirect(url_for('profile') + '?tab=settings')
+        
+        # Validate username
+        valid, msg = auth_manager.validate_username(username)
+        if not valid:
+            flash(msg, 'error')
+            return redirect(url_for('profile') + '?tab=settings')
+        
+        # Check if username/email already exists (excluding current user)
+        existing_user = local_db.select('users', where='username = ? AND id != ?', params=(username, user['id']), limit=1)
+        if existing_user:
+            flash('Username already exists', 'error')
+            return redirect(url_for('profile') + '?tab=settings')
+        
+        existing_email = local_db.select('users', where='email = ? AND id != ?', params=(email, user['id']), limit=1)
+        if existing_email:
+            flash('Email already exists', 'error')
+            return redirect(url_for('profile') + '?tab=settings')
+        
+        # Update profile
+        profile_data = {
+            'username': username,
+            'email': email
+        }
+        
+        success, message = user_manager.update_user_profile(user['id'], profile_data)
+        
+        if success:
+            # Update session
+            session['username'] = username
+            session['email'] = email
+            flash(message, 'success')
+        else:
+            flash(message, 'error')
+        
+        return redirect(url_for('profile') + '?tab=settings')
+    except Exception as e:
+        flash(f'Error updating profile: {str(e)}', 'error')
+        return redirect(url_for('profile'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=5003)

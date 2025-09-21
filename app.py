@@ -35,7 +35,7 @@ try:
         # Use Supabase (cloud)
         if SUPABASE_URL and SUPABASE_KEY and not SUPABASE_URL.startswith('your_') and not SUPABASE_KEY.startswith('your_'):
             print(f"Initializing Supabase client with URL: {SUPABASE_URL}")
-            supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
             # Test the connection
             test_result = supabase.table('articles').select('*').limit(1).execute()
             print("✅ Supabase connection successful!")
@@ -46,9 +46,9 @@ try:
         local_db = db_instance
         print(f"✅ Using local database: {get_database_status()}")
         
-except Exception as e:
+    except Exception as e:
     print(f"Warning: Could not initialize database: {e}")
-    supabase = None
+        supabase = None
     local_db = None
 
 # News categories for teens
@@ -81,7 +81,7 @@ def format_date(date_string):
     """Format date string"""
     try:
         if isinstance(date_string, str):
-            date_obj = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
+        date_obj = datetime.fromisoformat(date_string.replace('Z', '+00:00'))
         else:
             date_obj = date_string
         return date_obj.strftime('%B %d, %Y')
