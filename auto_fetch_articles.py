@@ -79,7 +79,7 @@ def fetch_news_from_perplexity(topic, category):
     ✅ Keep paragraphs short (5-7 sentences max)
     STRUCTURE REQUIREMENTS:
     📰 HEADLINE: Under 80 characters, catchy but not clickbait, clear and informative
-    📝 CONTENT: Exactly 5-10 paragraphs, 500 words total
+    📝 CONTENT: Exactly 10-15 paragraphs, 500-1000 words total, should be short but informative giving the whole story, should come up to a 5 minute read
     🎯 HOOK: Start with the most surprising or relevant takeaway for teens
     HEADLINE EXAMPLES:
     ❌ "Government Officials Discuss Economic Policy Changes"
@@ -94,10 +94,10 @@ def fetch_news_from_perplexity(topic, category):
     Format your response as JSON with these exact fields:
     {{
         "headline": "Your catchy headline under 80 characters",
-        "content": "Your 5-10 paragraph article, exactly 500 words",
+        "content": "Your paragraph article, exactly 500-1000 words",
         "source": "Original source name (e.g., The Guardian, BBC News)",
         "original_url": "URL of the original article you found",
-        "relevance": "Why this matters to teens specifically",
+        "relevance": "Why this matters to teens specifically and how it affects them",
         "category": "{category}"
     }}
     """
