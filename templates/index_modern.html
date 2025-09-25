@@ -167,6 +167,13 @@
             color: var(--text-dark);
         }
 
+        .articles-subtitle {
+            font-size: 1rem;
+            color: var(--text-gray);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
         .view-all-btn {
             background: var(--primary-blue);
             color: white;
@@ -207,16 +214,7 @@
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .article-image {
-            width: 100%;
-            height: 200px;
-            background: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            font-size: 3rem;
-        }
+        /* Article image removed */
 
         .article-content {
             padding: 1.5rem;
@@ -347,18 +345,30 @@
         }
 
         .continue-reading-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            display: flex;
             gap: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-orange) #f0f0f0;
         }
 
-        .continue-reading-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-            border-left: 4px solid var(--accent-orange);
+        .continue-reading-grid::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .continue-reading-grid::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .continue-reading-grid::-webkit-scrollbar-thumb {
+            background: var(--accent-orange);
+            border-radius: 4px;
+        }
+
+        .continue-reading-grid::-webkit-scrollbar-thumb:hover {
+            background: #e55a00;
         }
 
         .continue-reading-card:hover {
@@ -377,6 +387,39 @@
             color: var(--text-gray);
             font-size: 0.9rem;
             line-height: 1.5;
+        }
+
+        /* Simplified Continue Reading Cards */
+        .continue-reading-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            border-left: 4px solid var(--accent-orange);
+            min-width: 300px;
+            flex-shrink: 0;
+        }
+
+        .continue-reading-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .category-badge {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .last-read {
+            color: var(--text-gray);
+            font-style: italic;
         }
 
         /* Responsive */
@@ -470,11 +513,43 @@
         </div>
     </section>
 
+    <!-- Continue Reading Section -->
+    {% if continue_reading and is_authenticated %}
+    <section class="continue-reading-section">
+        <div class="continue-reading-container">
+            <h2 class="continue-reading-title">📖 Currently Reading</h2>
+            <div class="continue-reading-grid">
+                {% for article in continue_reading[:3] %}
+                <div class="continue-reading-card">
+                    <h4 class="continue-reading-title-small">
+                        <a href="{{ url_for('view_article', article_id=article.id) }}" class="read-more">
+                            {{ article.headline }}
+                        </a>
+                    </h4>
+                    <p class="continue-reading-excerpt">
+                        {{ article.content[:100] }}{% if article.content|length > 100 %}...{% endif %}
+                    </p>
+                    <div class="continue-reading-meta">
+                        <span class="category-badge">{{ article.category }}</span>
+                        <span class="last-read">Last read: {{ format_date(article.last_read_at) }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
     <!-- Latest Articles Section -->
     <section class="articles-section">
         <div class="articles-container">
             <div class="articles-header">
-                <h2 class="articles-title">Latest Articles</h2>
+                {% if is_authenticated %}
+                    <h2 class="articles-title">📰 Articles For You</h2>
+                    <p class="articles-subtitle">Personalized based on your interests</p>
+                {% else %}
+                    <h2 class="articles-title">Latest Articles</h2>
+                {% endif %}
                 <a href="{{ url_for('categories') }}" class="view-all-btn">
                     <i class="fas fa-arrow-right"></i>
                     View All
@@ -484,10 +559,6 @@
             <div class="articles-grid">
                 {% for article in articles[:6] %}
                 <article class="article-card">
-                    <div class="article-image">
-                        <i class="fas fa-newspaper"></i>
-                    </div>
-                    
                     <div class="article-content">
                         <span class="article-category">{{ article.category }}</span>
                         
@@ -538,29 +609,6 @@
                         </a>
                     </h4>
                     <p class="for-you-excerpt">
-                        {{ article.content[:100] }}{% if article.content|length > 100 %}...{% endif %}
-                    </p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-    {% endif %}
-
-    <!-- Continue Reading Section -->
-    {% if continue_reading_articles %}
-    <section class="continue-reading-section">
-        <div class="continue-reading-container">
-            <h2 class="continue-reading-title">Continue Reading</h2>
-            <div class="continue-reading-grid">
-                {% for article in continue_reading_articles[:3] %}
-                <div class="continue-reading-card">
-                    <h4 class="continue-reading-title-small">
-                        <a href="{{ url_for('view_article', article_id=article.id) }}" class="read-more">
-                            {{ article.headline }}
-                        </a>
-                    </h4>
-                    <p class="continue-reading-excerpt">
                         {{ article.content[:100] }}{% if article.content|length > 100 %}...{% endif %}
                     </p>
                 </div>

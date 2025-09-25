@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferences - TeenBuzz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .preferences-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .preferences-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .preferences-header h1 {
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+        
+        .preferences-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+        
+        .preference-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #1e40af;
+        }
+        
+        .preference-section h3 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .checkbox-item:hover {
+            border-color: #1e40af;
+            background: #f0f9ff;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #1e40af;
+        }
+        
+        .checkbox-item label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .checkbox-item.checked {
+            border-color: #1e40af;
+            background: #eff6ff;
+        }
+        
+        .save-button {
+            width: 100%;
+            padding: 1rem;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .save-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .save-button:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #10b981;
+            display: none;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ef4444;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('home') }}" class="logo">TeenBuzz</a>
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('categories') }}">Categories</a>
+                <a href="{{ url_for('trending') }}">Trending</a>
+                <a href="{{ url_for('search_articles') }}">Search</a>
+                <a href="{{ url_for('user_profile') }}">Profile</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="preferences-container">
+        <div class="preferences-header">
+            <h1><i class="fas fa-cog"></i> Your Preferences</h1>
+            <p>Customize your TeenBuzz experience by selecting your interests</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="success-message" class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span>Preferences saved successfully!</span>
+        </div>
+        
+        <div id="error-message" class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Error saving preferences. Please try again.</span>
+        </div>
+
+        <form id="preferences-form" method="POST" action="{{ url_for('update_preferences') }}">
+            <!-- Categories Section -->
+            <div class="preference-section">
+                <h3><i class="fas fa-tags"></i> Favorite Categories</h3>
+                <div id="categories-container" class="checkbox-grid">
+                    {% for category in available_categories %}
+                    <div class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox" 
+                               name="categories" 
+                               value="{{ category }}"
+                               id="cat_{{ loop.index }}"
+                               {% if category in user_preferences.categories %}checked{% endif %}>
+                        <label for="cat_{{ loop.index }}">{{ category }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Topics Section -->
+            <div class="preference-section">
+                <h3><i class="fas fa-lightbulb"></i> Topics of Interest</h3>
+                <div id="topics-container" class="checkbox-grid">
+                    {% for topic in available_topics[:20] %}
+                    <div class="checkbox-item" onclick="toggleCheckbox(this)">
+                        <input type="checkbox" 
+                               name="topics" 
+                               value="{{ topic }}"
+                               id="topic_{{ loop.index }}"
+                               {% if topic in user_preferences.topics %}checked{% endif %}>
+                        <label for="topic_{{ loop.index }}">{{ topic.title() }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="save-button">
+                <i class="fas fa-save"></i>
+                Save Preferences
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Toggle checkbox when clicking on the item
+        function toggleCheckbox(item) {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateItemStyle(item);
+            
+            // If it's a topic that was checked, move it to categories
+            if (checkbox.name === 'topics' && checkbox.checked) {
+                moveTopicToCategories(item);
+            }
+            // If it's a topic that was unchecked, move it back to topics
+            else if (checkbox.name === 'topics' && !checkbox.checked) {
+                moveTopicBackToTopics(item);
+            }
+        }
+
+        // Move a checked topic to the categories section
+        function moveTopicToCategories(topicItem) {
+            const checkbox = topicItem.querySelector('input[type="checkbox"]');
+            const label = topicItem.querySelector('label');
+            
+            // Create a new category item
+            const newCategoryItem = document.createElement('div');
+            newCategoryItem.className = 'checkbox-item checked';
+            newCategoryItem.onclick = function() { toggleCheckbox(this); };
+            
+            // Create new checkbox for categories
+            const newCheckbox = document.createElement('input');
+            newCheckbox.type = 'checkbox';
+            newCheckbox.name = 'categories';
+            newCheckbox.value = checkbox.value;
+            newCheckbox.checked = true;
+            newCheckbox.id = 'cat_' + Date.now(); // Unique ID
+            
+            // Create new label
+            const newLabel = document.createElement('label');
+            newLabel.htmlFor = newCheckbox.id;
+            newLabel.textContent = label.textContent;
+            
+            // Assemble the new item
+            newCategoryItem.appendChild(newCheckbox);
+            newCategoryItem.appendChild(newLabel);
+            
+            // Add to categories container
+            const categoriesContainer = document.getElementById('categories-container');
+            categoriesContainer.appendChild(newCategoryItem);
+            
+            // Hide the original topic item
+            topicItem.style.display = 'none';
+            
+            // Add a data attribute to track the original item
+            newCategoryItem.setAttribute('data-original-topic', topicItem.id || 'topic_' + Date.now());
+        }
+
+        // Move a topic back to the topics section when unchecked
+        function moveTopicBackToTopics(topicItem) {
+            const checkbox = topicItem.querySelector('input[type="checkbox"]');
+            const value = checkbox.value;
+            
+            // Find and remove the corresponding category item
+            const categoriesContainer = document.getElementById('categories-container');
+            const categoryItems = categoriesContainer.querySelectorAll('.checkbox-item');
+            
+            categoryItems.forEach(categoryItem => {
+                const categoryCheckbox = categoryItem.querySelector('input[name="categories"]');
+                if (categoryCheckbox && categoryCheckbox.value === value) {
+                    categoryItem.remove();
+                }
+            });
+            
+            // Show the original topic item
+            topicItem.style.display = 'flex';
+        }
+
+        // Update visual style based on checkbox state
+        function updateItemStyle(item) {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+        }
+
+        // Initialize styles and move existing checked topics on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxItems = document.querySelectorAll('.checkbox-item');
+            checkboxItems.forEach(updateItemStyle);
+            
+            // Move any topics that are already checked to categories
+            const topicItems = document.querySelectorAll('#topics-container .checkbox-item');
+            topicItems.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox.checked) {
+                    moveTopicToCategories(item);
+                }
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('preferences-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const categories = formData.getAll('categories');
+            const topics = formData.getAll('topics');
+            
+            console.log('Submitting:', { categories, topics });
+            
+            // Show loading state
+            const submitBtn = this.querySelector('.save-button');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    showMessage('success');
+                } else {
+                    showMessage('error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error');
+            })
+            .finally(() => {
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        function showMessage(type) {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            
+            // Hide both messages first
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Show the appropriate message
+            if (type === 'success') {
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            } else {
+                errorMsg.style.display = 'block';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

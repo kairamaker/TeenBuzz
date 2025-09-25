@@ -9,20 +9,25 @@ from auth_system_enhanced import auth_manager
 
 class UserManager:
     def __init__(self):
-        self.db = get_database()
+        pass  # Don't store database connection to avoid threading issues
+    
+    def _get_db(self):
+        """Get fresh database connection for each request"""
+        return get_database()
     
     def get_user_profile(self, user_id):
         """Get complete user profile with preferences"""
         try:
             # Get user data
-            user = self.db.select('users', where='id = ?', params=(user_id,), limit=1)
+            db = self._get_db()
+            user = db.select('users', where='id = ?', params=(user_id,), limit=1)
             if not user:
                 return None
             
             user_data = user[0]
             
             # Get user preferences (convert user_id to string for TEXT column)
-            preferences = self.db.select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
+            preferences = db.select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
             if preferences:
                 user_data['preferences'] = preferences[0]
             else:
@@ -48,7 +53,7 @@ class UserManager:
         }
         
         try:
-            pref_id = self.db.insert('user_preferences', default_prefs)
+            pref_id = self._get_db().insert('user_preferences', default_prefs)
             default_prefs['id'] = pref_id
             return default_prefs
         except Exception as e:
@@ -58,22 +63,29 @@ class UserManager:
     def update_user_preferences(self, user_id, preferences_data):
         """Update user preferences"""
         try:
+            print(f"🔍 Checking preferences for user_id: {user_id}")
+            db = self._get_db()
+            
             # Check if preferences exist
-            existing = self.db.select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
+            existing = db.select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
+            print(f"📊 Existing preferences: {existing}")
             
             preferences_data['updated_at'] = datetime.now().isoformat()
             
             if existing:
                 # Update existing preferences
-                self.db.update('user_preferences', preferences_data, 'user_id = ?', (user_id,))
+                print(f"🔄 Updating existing preferences")
+                db.update('user_preferences', preferences_data, 'user_id = ?', (str(user_id),))
                 return True, "Preferences updated successfully"
             else:
                 # Create new preferences
+                print(f"➕ Creating new preferences")
                 preferences_data['user_id'] = str(user_id)
                 preferences_data['created_at'] = datetime.now().isoformat()
-                self.db.insert('user_preferences', preferences_data)
+                db.insert('user_preferences', preferences_data)
                 return True, "Preferences created successfully"
         except Exception as e:
+            print(f"❌ Error in update_user_preferences: {str(e)}")
             return False, f"Error updating preferences: {str(e)}"
     
     def get_user_stats(self, user_id):
@@ -88,7 +100,7 @@ class UserManager:
             }
             
             # Get user data for member_since and last_active
-            user = self.db.select('users', where='id = ?', params=(user_id,), limit=1)
+            user = self._get_db().select('users', where='id = ?', params=(user_id,), limit=1)
             if user:
                 user_data = user[0]
                 stats['member_since'] = user_data.get('created_at')
@@ -113,7 +125,7 @@ class UserManager:
             
             profile_data['updated_at'] = datetime.now().isoformat()
             
-            self.db.update('users', profile_data, 'id = ?', (user_id,))
+            self._get_db().update('users', profile_data, 'id = ?', (user_id,))
             return True, "Profile updated successfully"
         except Exception as e:
             return False, f"Error updating profile: {str(e)}"
@@ -121,9 +133,33 @@ class UserManager:
     def get_user_reading_history(self, user_id, limit=10):
         """Get user's reading history"""
         try:
-            # This would require a reading_history table
-            # For now, return empty list
-            return []
+            reading_records = self._get_db().select('reading_history', 
+                                            where='user_id = ?', 
+                                            params=(str(user_id),), 
+                                            limit=limit)
+            
+            history = []
+            for record in reading_records:
+                # Get article details
+                article_id = record['article_id']
+                articles = self._get_db().select('articles', where='id = ?', params=(article_id,), limit=1)
+                
+                if articles:
+                    article = articles[0]
+                    history.append({
+                        'id': record['id'],
+                        'user_id': record['user_id'],
+                        'article_id': record['article_id'],
+                        'progress_percentage': record['progress_percentage'],
+                        'last_read_at': record['last_read_at'],
+                        'created_at': record['created_at'],
+                        'updated_at': record['updated_at'],
+                        'headline': article['headline'],
+                        'category': article['category'],
+                        'source': article['source']
+                    })
+            
+            return history
         except Exception as e:
             print(f"Error getting reading history: {e}")
             return []
@@ -142,11 +178,11 @@ class UserManager:
         """Get personalized article recommendations"""
         try:
             # Get user preferences
-            preferences = self.db.select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
+            preferences = self._get_db().select('user_preferences', where='user_id = ?', params=(str(user_id),), limit=1)
             
             if not preferences:
                 # Return random articles if no preferences
-                articles = self.db.select('articles', limit=limit)
+                articles = self._get_db().select('articles', limit=limit)
                 return articles
             
             pref_data = preferences[0]
@@ -160,7 +196,7 @@ class UserManager:
             for category in preferred_categories:
                 category = category.strip()
                 if category:
-                    articles = self.db.select('articles', where='category = ?', params=(category,), limit=2)
+                    articles = self._get_db().select('articles', where='category = ?', params=(category,), limit=2)
                     recommended.extend(articles)
             
             # If not enough articles, get articles with preferred topics in tags
@@ -168,7 +204,7 @@ class UserManager:
                 for topic in preferred_topics:
                     topic = topic.strip()
                     if topic:
-                        articles = self.db.select('articles', where='tags LIKE ?', params=(f'%{topic}%',), limit=2)
+                        articles = self._get_db().select('articles', where='tags LIKE ?', params=(f'%{topic}%',), limit=2)
                         recommended.extend(articles)
             
             # Remove duplicates and limit results
@@ -189,7 +225,7 @@ class UserManager:
     def get_available_categories(self):
         """Get all available categories"""
         try:
-            categories = self.db.select('categories')
+            categories = self._get_db().select('categories')
             return [cat['name'] for cat in categories] if categories else []
         except Exception as e:
             print(f"Error getting categories: {e}")
@@ -198,7 +234,7 @@ class UserManager:
     def get_available_topics(self):
         """Get all available topics from article tags"""
         try:
-            articles = self.db.select('articles')
+            articles = self._get_db().select('articles')
             all_topics = set()
             
             for article in articles:
@@ -212,6 +248,84 @@ class UserManager:
         except Exception as e:
             print(f"Error getting topics: {e}")
             return ['technology', 'environment', 'health', 'science', 'politics', 'education', 'ai', 'climate']
+
+    def get_continue_reading_articles(self, user_id, limit=5):
+        """Get articles the user has read, prioritizing incomplete ones, then showing recent completed ones"""
+        try:
+            # Get all reading history records for user, ordered by last_read_at (most recent first)
+            reading_records = self._get_db().execute_query(
+                "SELECT * FROM reading_history WHERE user_id = ? ORDER BY last_read_at DESC LIMIT ?",
+                (str(user_id), limit * 2)
+            )
+            
+            if not reading_records:
+                return []
+            
+            # Separate incomplete and complete articles
+            incomplete_articles = []
+            complete_articles = []
+            
+            for record in reading_records:
+                # Get the article data
+                article_id = record['article_id']
+                articles = self._get_db().select('articles', where='id = ?', params=(article_id,), limit=1)
+                
+                if articles:
+                    article = articles[0]
+                    # Add reading progress data to article
+                    article['reading_progress'] = record['progress_percentage']
+                    article['last_read_at'] = record['last_read_at']
+                    
+                    if record['progress_percentage'] < 1.0:
+                        incomplete_articles.append(article)
+                    else:
+                        complete_articles.append(article)
+            
+            # Prioritize incomplete articles, then add recent complete ones
+            continue_reading = incomplete_articles[:limit]
+            
+            # If we need more articles and have complete ones, add recent completed articles
+            if len(continue_reading) < limit and complete_articles:
+                remaining_slots = limit - len(continue_reading)
+                continue_reading.extend(complete_articles[:remaining_slots])
+            
+            return continue_reading
+        except Exception as e:
+            print(f"Error getting continue reading articles: {e}")
+            return []
+
+    def update_reading_progress(self, user_id, article_id, progress_percentage):
+        """Update or create reading progress for a user and article"""
+        try:
+            # Check if reading history already exists
+            existing = self._get_db().select('reading_history', 
+                                    where='user_id = ? AND article_id = ?', 
+                                    params=(str(user_id), article_id), 
+                                    limit=1)
+            
+            if existing:
+                # Update existing record
+                self._get_db().update('reading_history', 
+                             {'progress_percentage': progress_percentage, 
+                              'last_read_at': datetime.now().isoformat(),
+                              'updated_at': datetime.now().isoformat()}, 
+                             'user_id = ? AND article_id = ?', 
+                             (str(user_id), article_id))
+            else:
+                # Create new record
+                reading_data = {
+                    'user_id': str(user_id),
+                    'article_id': article_id,
+                    'progress_percentage': progress_percentage,
+                    'last_read_at': datetime.now().isoformat(),
+                    'created_at': datetime.now().isoformat(),
+                    'updated_at': datetime.now().isoformat()
+                }
+                self._get_db().insert('reading_history', reading_data)
+            
+            return True, "Reading progress updated successfully"
+        except Exception as e:
+            return False, f"Error updating reading progress: {str(e)}"
 
 # Global user manager instance
 user_manager = UserManager()

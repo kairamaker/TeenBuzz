@@ -249,11 +249,7 @@
             
             <div class="user-actions">
                 {% if is_authenticated %}
-                    <a href="{{ url_for('user_dashboard') }}" class="nav-link">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </a>
-                    <a href="{{ url_for('profile') }}" class="profile-btn">
+                    <a href="{{ url_for('user_profile') }}" class="profile-btn">
                         <i class="fas fa-user"></i>
                         {{ current_user.username if current_user else 'Profile' }}
                     </a>

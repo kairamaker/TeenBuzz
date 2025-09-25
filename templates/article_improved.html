@@ -49,18 +49,7 @@
             gap: 0.5rem;
         }
 
-        .article-image {
-            width: 100%;
-            height: 400px;
-            background: var(--bg-light);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            font-size: 4rem;
-            margin-bottom: 2rem;
-        }
+        /* Article image removed */
 
         .article-content {
             font-size: 1.1rem;
@@ -103,10 +92,311 @@
             border-color: var(--primary-blue);
         }
 
+        /* Reading progress styles removed */
+
         .action-btn.liked {
             background: #ef4444;
             color: white;
             border-color: #ef4444;
+        }
+
+        /* Article Actions */
+        .article-actions {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-like, .btn-bookmark {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: 25px;
+            background: white;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-like:hover, .btn-bookmark:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-like.liked {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+
+        .btn-bookmark.bookmarked {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border-light);
+        }
+
+        .comments-header {
+            margin-bottom: 2rem;
+        }
+
+        .comments-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comments-count {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .comment-form-container {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-comment {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-comment:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-1px);
+        }
+
+        .login-prompt {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-prompt a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-prompt a:hover {
+            text-decoration: underline;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .comment-item {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .comment-date {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit, .btn-delete {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: var(--bg-light);
+            color: var(--text-gray);
+        }
+
+        .btn-edit:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--bg-light);
+            color: var(--text-gray);
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        .comment-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .comment-footer {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-like-comment, .btn-reply {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            background: white;
+            color: var(--text-gray);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-like-comment:hover, .btn-reply:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .btn-like-comment.liked {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+
+        .replies {
+            margin-top: 1rem;
+            margin-left: 2rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-light);
+        }
+
+        .reply-item {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-gray);
         }
 
         .related-articles {
@@ -244,7 +534,7 @@
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-heart"></i>
-                        <span>{{ article.likes or 0 }} likes</span>
+                        <span id="like-count">{{ article.likes or 0 }} likes</span>
                     </div>
                     {% if article.source %}
                     <div class="meta-item">
@@ -252,34 +542,169 @@
                         <span>{{ article.source }}</span>
                     </div>
                     {% endif %}
+                    {% if article.url %}
+                    <div class="meta-item">
+                        <i class="fas fa-external-link-alt"></i>
+                        <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); text-decoration: none;">
+                            View Original
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
+                
+                {% if is_authenticated %}
+                <div class="article-actions">
+                    <button class="btn-like" onclick="toggleLike({{ article.id }})" id="like-btn">
+                        <i class="fas fa-heart"></i>
+                        <span id="like-text">Like</span>
+                    </button>
+                    <button class="btn-bookmark" onclick="toggleBookmark({{ article.id }})" id="bookmark-btn">
+                        <i class="fas fa-bookmark"></i>
+                        <span id="bookmark-text">Bookmark</span>
+                    </button>
+                </div>
+                {% endif %}
+                
+                <!-- Reading progress tracking removed -->
             </header>
-
-            <div class="article-image">
-                <i class="fas fa-newspaper"></i>
-            </div>
 
             <div class="article-content">
                 {{ article.content|replace('\n', '<br>')|safe }}
             </div>
 
+            {% if is_authenticated %}
             <div class="article-actions">
-                <button class="action-btn" onclick="likeArticle()">
-                    <i class="fas fa-heart"></i>
-                    <span>Like</span>
-                </button>
                 <button class="action-btn" onclick="shareArticle()">
                     <i class="fas fa-share"></i>
                     <span>Share</span>
                 </button>
-                <button class="action-btn" onclick="bookmarkArticle()">
-                    <i class="fas fa-bookmark"></i>
-                    <span>Save</span>
-                </button>
             </div>
+            {% endif %}
         </article>
 
+        <!-- Comments Section -->
+        <section class="comments-section">
+            <div class="comments-header">
+                <h2 class="comments-title">
+                    <i class="fas fa-comments"></i>
+                    Comments
+                    <span class="comments-count" id="comments-count">{{ comments|length if comments else 0 }}</span>
+                </h2>
+            </div>
+
+            {% if is_authenticated %}
+            <!-- Comment Form -->
+            <div class="comment-form-container">
+                <form id="comment-form" class="comment-form">
+                    <div class="form-group">
+                        <textarea id="comment-content" name="content" class="comment-textarea" 
+                                  placeholder="Share your thoughts on this article..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-comment">
+                            <i class="fas fa-paper-plane"></i>
+                            Post Comment
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <div class="login-prompt">
+                <p>Please <a href="{{ url_for('login') }}">log in</a> to leave a comment.</p>
+            </div>
+            {% endif %}
+
+            <!-- Comments List -->
+            <div class="comments-list" id="comments-list">
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="comment-item" data-comment-id="{{ comment.id }}">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="author-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="author-info">
+                                    <span class="author-name">{{ comment.username }}</span>
+                                    <span class="comment-date">{{ format_date(comment.created_at) if format_date else comment.created_at[:10] }}</span>
+                                </div>
+                            </div>
+                            {% if is_authenticated and session.user_id == comment.user_id %}
+                            <div class="comment-actions">
+                                <button class="btn-edit" onclick="editComment({{ comment.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-delete" onclick="deleteComment({{ comment.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="comment-content" id="comment-content-{{ comment.id }}">
+                            {{ comment.content|replace('\n', '<br>')|safe }}
+                        </div>
+                        <div class="comment-footer">
+                            <button class="btn-like-comment" onclick="likeComment({{ comment.id }})">
+                                <i class="fas fa-heart"></i>
+                                <span class="like-count">{{ comment.likes or 0 }}</span>
+                            </button>
+                            <button class="btn-reply" onclick="replyToComment({{ comment.id }})">
+                                <i class="fas fa-reply"></i>
+                                Reply
+                            </button>
+                        </div>
+
+                        <!-- Replies -->
+                        {% if comment.replies %}
+                        <div class="replies">
+                            {% for reply in comment.replies %}
+                            <div class="reply-item" data-comment-id="{{ reply.id }}">
+                                <div class="comment-header">
+                                    <div class="comment-author">
+                                        <div class="author-avatar">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div class="author-info">
+                                            <span class="author-name">{{ reply.username }}</span>
+                                            <span class="comment-date">{{ format_date(reply.created_at) if format_date else reply.created_at[:10] }}</span>
+                                        </div>
+                                    </div>
+                                    {% if is_authenticated and session.user_id == reply.user_id %}
+                                    <div class="comment-actions">
+                                        <button class="btn-edit" onclick="editComment({{ reply.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-delete" onclick="deleteComment({{ reply.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="comment-content" id="comment-content-{{ reply.id }}">
+                                    {{ reply.content|replace('\n', '<br>')|safe }}
+                                </div>
+                                <div class="comment-footer">
+                                    <button class="btn-like-comment" onclick="likeComment({{ reply.id }})">
+                                        <i class="fas fa-heart"></i>
+                                        <span class="like-count">{{ reply.likes or 0 }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="no-comments">
+                    <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
         <!-- Related Articles -->
+        {% if related_articles %}
         <section class="related-articles">
             <h2 class="related-title">Related Articles</h2>
             <div class="related-grid">
@@ -303,6 +728,7 @@
                 {% endfor %}
             </div>
         </section>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -339,6 +765,92 @@
             }
         }
 
+        // Reading Progress Tracking
+        // Reading progress tracking removed - no longer needed
+
+        // Like and Bookmark functionality
+        function toggleLike(articleId) {
+            const likeBtn = document.getElementById('like-btn');
+            const likeText = document.getElementById('like-text');
+            const likeCount = document.getElementById('like-count');
+            
+            // Disable button during request
+            likeBtn.disabled = true;
+            
+            fetch(`/like-article/${articleId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    if (data.message.includes('liked')) {
+                        likeBtn.classList.add('liked');
+                        likeText.textContent = 'Liked';
+                    } else {
+                        likeBtn.classList.remove('liked');
+                        likeText.textContent = 'Like';
+                    }
+                    
+                    // Update like count
+                    if (likeCount) {
+                        likeCount.textContent = `${data.like_count} likes`;
+                    }
+                } else {
+                    console.error('Error:', data.error);
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error liking article');
+            })
+            .finally(() => {
+                likeBtn.disabled = false;
+            });
+        }
+
+        function toggleBookmark(articleId) {
+            const bookmarkBtn = document.getElementById('bookmark-btn');
+            const bookmarkText = document.getElementById('bookmark-text');
+            
+            // Disable button during request
+            bookmarkBtn.disabled = true;
+            
+            fetch(`/bookmark-article/${articleId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    if (data.message.includes('bookmarked')) {
+                        bookmarkBtn.classList.add('bookmarked');
+                        bookmarkText.textContent = 'Bookmarked';
+                    } else {
+                        bookmarkBtn.classList.remove('bookmarked');
+                        bookmarkText.textContent = 'Bookmark';
+                    }
+                } else {
+                    console.error('Error:', data.error);
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error bookmarking article');
+            })
+            .finally(() => {
+                bookmarkBtn.disabled = false;
+            });
+        }
+
         function bookmarkArticle() {
             const btn = event.target.closest('.action-btn');
             const icon = btn.querySelector('i');
@@ -356,6 +868,203 @@
                 btn.style.background = 'white';
                 btn.style.color = 'var(--text-gray)';
                 btn.style.borderColor = 'var(--border-light)';
+            }
+        }
+
+        // Comments functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentForm = document.getElementById('comment-form');
+            if (commentForm) {
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    postComment();
+                });
+            }
+        });
+
+        function postComment() {
+            const content = document.getElementById('comment-content').value.trim();
+            if (!content) {
+                alert('Please enter a comment');
+                return;
+            }
+
+            const formData = {
+                content: content
+            };
+
+            fetch(`/comment/{{ article.id }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear form
+                    document.getElementById('comment-content').value = '';
+                    // Reload page to show new comment
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error posting comment');
+            });
+        }
+
+        function editComment(commentId) {
+            const contentElement = document.getElementById(`comment-content-${commentId}`);
+            const currentContent = contentElement.textContent;
+            
+            // Create input field
+            const input = document.createElement('textarea');
+            input.value = currentContent;
+            input.className = 'comment-textarea';
+            input.style.marginBottom = '1rem';
+            
+            // Replace content with input
+            contentElement.innerHTML = '';
+            contentElement.appendChild(input);
+            
+            // Add save/cancel buttons
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '0.5rem';
+            
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save';
+            saveBtn.className = 'btn-comment';
+            saveBtn.onclick = () => saveComment(commentId, input.value);
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.className = 'btn-secondary';
+            cancelBtn.onclick = () => location.reload();
+            
+            buttonContainer.appendChild(saveBtn);
+            buttonContainer.appendChild(cancelBtn);
+            contentElement.appendChild(buttonContainer);
+            
+            input.focus();
+        }
+
+        function saveComment(commentId, content) {
+            if (!content.trim()) {
+                alert('Comment cannot be empty');
+                return;
+            }
+
+            fetch(`/comment/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating comment');
+            });
+        }
+
+        function deleteComment(commentId) {
+            if (!confirm('Are you sure you want to delete this comment?')) {
+                return;
+            }
+
+            fetch(`/comment/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting comment');
+            });
+        }
+
+        function likeComment(commentId) {
+            fetch(`/like-comment/${commentId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Simple reload to update like count
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error liking comment');
+            });
+        }
+
+        function replyToComment(commentId) {
+            // For now, just scroll to comment form
+            // In a full implementation, you'd create a reply form
+            const commentForm = document.getElementById('comment-content');
+            if (commentForm) {
+                commentForm.focus();
+                commentForm.placeholder = `Replying to comment ${commentId}...`;
+            }
+        }
+
+        // Share functionality
+        function shareArticle() {
+            const articleTitle = "{{ article.headline }}";
+            const articleUrl = window.location.href;
+            const shareText = `Check out this article: ${articleTitle}`;
+            
+            if (navigator.share) {
+                // Use native sharing if available
+                navigator.share({
+                    title: articleTitle,
+                    text: shareText,
+                    url: articleUrl
+                }).catch(err => console.log('Error sharing:', err));
+            } else {
+                // Fallback: copy to clipboard
+                const shareData = `${shareText}\n${articleUrl}`;
+                navigator.clipboard.writeText(shareData).then(() => {
+                    alert('Article link copied to clipboard!');
+                }).catch(err => {
+                    // Fallback: show share options
+                    const shareOptions = `
+Share this article:
+${shareText}
+${articleUrl}
+
+Or copy the link manually.
+                    `;
+                    prompt('Copy this link:', articleUrl);
+                });
             }
         }
     </script>

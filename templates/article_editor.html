@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Article' if article else 'Create Article' }} - TeenBuzz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .editor-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+
+    .editor-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .editor-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .editor-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-gray);
+    }
+
+    .editor-form {
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-light);
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 1rem;
+    }
+
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--bg-light);
+        font-family: inherit;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 300px;
+        resize: vertical;
+    }
+
+    .form-help {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        margin-top: 0.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+
+    .btn-primary {
+        padding: 1rem 2rem;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+        padding: 1rem 2rem;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: white;
+        border-color: var(--primary-blue);
+        color: var(--primary-blue);
+    }
+
+    .btn-danger {
+        padding: 1rem 2rem;
+        background: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+    }
+
+    .preview-section {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: var(--bg-light);
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+    }
+
+    .preview-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .preview-content {
+        color: var(--text-gray);
+        line-height: 1.6;
+    }
+
+    .error-message {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .success-message {
+        background: #dcfce7;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .editor-container {
+            padding: 1rem;
+        }
+        
+        .editor-form {
+            padding: 2rem;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-primary, .btn-secondary, .btn-danger {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editor-container">
+    <div class="editor-header">
+        <h1 class="editor-title">
+            {% if article %}
+                <i class="fas fa-edit"></i> Edit Article
+            {% else %}
+                <i class="fas fa-plus"></i> Create Article
+            {% endif %}
+        </h1>
+        <p class="editor-subtitle">
+            {% if article %}
+                Update your article content and settings
+            {% else %}
+                Create a new article for TeenBuzz
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="editor-form">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ 'success-message' if category == 'success' else 'error-message' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="article-form">
+            <div class="form-group">
+                <label for="headline" class="form-label">Article Headline</label>
+                <input type="text" id="headline" name="headline" class="form-input" 
+                       placeholder="Enter a compelling headline" required
+                       value="{{ article.headline if article else '' }}">
+                <div class="form-help">Make it engaging and clear for teen readers</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="category" class="form-select" required>
+                        <option value="">Select a category</option>
+                        <option value="Technology" {{ 'selected' if article and article.category == 'Technology' else '' }}>Technology</option>
+                        <option value="Health" {{ 'selected' if article and article.category == 'Health' else '' }}>Health</option>
+                        <option value="Environment" {{ 'selected' if article and article.category == 'Environment' else '' }}>Environment</option>
+                        <option value="Science" {{ 'selected' if article and article.category == 'Science' else '' }}>Science</option>
+                        <option value="Education" {{ 'selected' if article and article.category == 'Education' else '' }}>Education</option>
+                        <option value="Social Issues" {{ 'selected' if article and article.category == 'Social Issues' else '' }}>Social Issues</option>
+                        <option value="Entertainment" {{ 'selected' if article and article.category == 'Entertainment' else '' }}>Entertainment</option>
+                        <option value="Sports" {{ 'selected' if article and article.category == 'Sports' else '' }}>Sports</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="source" class="form-label">Source</label>
+                    <input type="text" id="source" name="source" class="form-input" 
+                           placeholder="e.g., BBC News, CNN, etc."
+                           value="{{ article.source if article else 'TeenBuzz' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="tags" class="form-label">Tags</label>
+                <input type="text" id="tags" name="tags" class="form-input" 
+                       placeholder="Enter tags separated by commas (e.g., AI, technology, teens)"
+                       value="{{ article.tags if article else '' }}">
+                <div class="form-help">Use relevant keywords to help readers find your article</div>
+            </div>
+
+            <div class="form-group">
+                <label for="url" class="form-label">Source URL (Optional)</label>
+                <input type="url" id="url" name="url" class="form-input" 
+                       placeholder="https://example.com/article"
+                       value="{{ article.url if article else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="content" class="form-label">Article Content</label>
+                <textarea id="content" name="content" class="form-textarea" 
+                          placeholder="Write your article content here..." required>{{ article.content if article else '' }}</textarea>
+                <div class="form-help">Write engaging content that's relevant and interesting to teen readers</div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    {{ 'Update Article' if article else 'Create Article' }}
+                </button>
+                
+                <a href="{{ url_for('article_management') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Articles
+                </a>
+                
+                {% if article %}
+                <button type="button" class="btn-danger" onclick="deleteArticle()">
+                    <i class="fas fa-trash"></i>
+                    Delete Article
+                </button>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="preview-section" style="display: none;">
+            <h3 class="preview-title">Preview</h3>
+            <div class="preview-content" id="preview-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; max-width: 400px; width: 90%;">
+        <h3 style="margin-bottom: 1rem; color: var(--text-dark);">Confirm Delete</h3>
+        <p style="margin-bottom: 2rem; color: var(--text-gray);">Are you sure you want to delete this article? This action cannot be undone.</p>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button onclick="closeDeleteModal()" class="btn-secondary">Cancel</button>
+            <button onclick="confirmDelete()" class="btn-danger">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('article-form');
+    const previewSection = document.getElementById('preview-section');
+    const previewContent = document.getElementById('preview-content');
+    
+    // Auto-save draft (optional)
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            updatePreview();
+        });
+    });
+    
+    function updatePreview() {
+        const headline = document.getElementById('headline').value;
+        const content = document.getElementById('content').value;
+        const category = document.getElementById('category').value;
+        
+        if (headline || content) {
+            previewSection.style.display = 'block';
+            
+            let preview = '';
+            if (headline) {
+                preview += `<h2 style="color: var(--text-dark); margin-bottom: 1rem;">${headline}</h2>`;
+            }
+            if (category) {
+                preview += `<span style="background: var(--primary-blue); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; margin-bottom: 1rem; display: inline-block;">${category}</span>`;
+            }
+            if (content) {
+                preview += `<div style="margin-top: 1rem;">${content.replace(/\n/g, '<br>')}</div>`;
+            }
+            
+            previewContent.innerHTML = preview;
+        } else {
+            previewSection.style.display = 'none';
+        }
+    }
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const headline = document.getElementById('headline').value.trim();
+        const content = document.getElementById('content').value.trim();
+        const category = document.getElementById('category').value;
+        
+        if (!headline || !content || !category) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return false;
+        }
+        
+        if (headline.length < 10) {
+            e.preventDefault();
+            alert('Headline must be at least 10 characters long.');
+            return false;
+        }
+        
+        if (content.length < 100) {
+            e.preventDefault();
+            alert('Article content must be at least 100 characters long.');
+            return false;
+        }
+    });
+});
+
+function deleteArticle() {
+    document.getElementById('delete-modal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+}
+
+function confirmDelete() {
+    {% if article %}
+    window.location.href = "{{ url_for('delete_article', article_id=article.id) }}";
+    {% endif %}
+}
+</script>
+{% endblock %}
+

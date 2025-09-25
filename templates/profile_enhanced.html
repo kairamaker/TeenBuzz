@@ -344,7 +344,7 @@
                 <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
                 <a href="{{ url_for('search_articles') }}" class="nav-link">Search</a>
                 {% if is_authenticated %}
-                    <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                    <a href="{{ url_for('user_profile') }}" class="nav-link">Profile</a>
                     <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="nav-link">Login</a>
@@ -399,14 +399,10 @@
 
         <!-- Profile Tabs -->
         <div class="profile-tabs">
-            <button class="tab-button active" onclick="showTab('overview')">
-                <i class="fas fa-chart-line"></i>
-                Overview
-            </button>
-            <button class="tab-button" onclick="showTab('preferences')">
+            <a href="{{ url_for('preferences') }}" class="tab-button active">
                 <i class="fas fa-cog"></i>
                 Preferences
-            </button>
+            </a>
             <button class="tab-button" onclick="showTab('recommendations')">
                 <i class="fas fa-star"></i>
                 For You
@@ -419,27 +415,8 @@
 
         <!-- Tab Content -->
         <div class="tab-content">
-            <!-- Overview Tab -->
-            <div id="overview-tab" class="tab-panel">
-                <h2>Welcome back, {{ current_user.username }}!</h2>
-                <p>Here's your activity overview and personalized content.</p>
-                
-                <div class="recommendations-grid">
-                    {% for article in recommended_articles %}
-                    <div class="article-card">
-                        <h3>{{ article.headline }}</h3>
-                        <p>{{ article.content[:150] }}...</p>
-                        <div class="article-meta">
-                            <span>{{ article.category }}</span>
-                            <span>{{ article.views }} views</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
             <!-- Preferences Tab -->
-            <div id="preferences-tab" class="tab-panel hidden">
+            <div id="preferences-tab" class="tab-panel">
                 <h2>Your Preferences</h2>
                 <p>Customize your TeenBuzz experience by selecting your interests.</p>
                 

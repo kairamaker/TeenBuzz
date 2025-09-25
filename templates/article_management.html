@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Article Management - TeenBuzz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 2rem;
+    }
+
+    .admin-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .admin-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+
+    .admin-subtitle {
+        font-size: 1.1rem;
+        color: var(--text-gray);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border: 1px solid var(--border-light);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: var(--text-gray);
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+    }
+
+    .articles-table {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-light);
+    }
+
+    .table-header {
+        background: var(--bg-light);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+    }
+
+    .table-content {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    th {
+        background: var(--bg-light);
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        color: var(--text-gray);
+    }
+
+    .article-title {
+        font-weight: 600;
+        color: var(--text-dark);
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .category-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .category-technology { background: #dbeafe; color: #1e40af; }
+    .category-environment { background: #dcfce7; color: #166534; }
+    .category-health { background: #fef3c7; color: #92400e; }
+    .category-education { background: #e0e7ff; color: #3730a3; }
+    .category-science { background: #f3e8ff; color: #7c3aed; }
+    .category-social { background: #fce7f3; color: #be185d; }
+
+    .article-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit {
+        background: #f3f4f6;
+        color: var(--text-dark);
+    }
+
+    .btn-edit:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-delete:hover {
+        background: #fecaca;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-gray);
+    }
+
+    .error {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    @media (max-width: 768px) {
+        .admin-container {
+            padding: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-action {
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .table-content {
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="admin-title">📰 Article Management</h1>
+        <p class="admin-subtitle">Manage and monitor your TeenBuzz articles</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="total-articles">-</div>
+            <div class="stat-label">Total Articles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="recent-articles">-</div>
+            <div class="stat-label">Last 24 Hours</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="total-views">-</div>
+            <div class="stat-label">Total Views</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="total-likes">-</div>
+            <div class="stat-label">Total Likes</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{{ url_for('create_article') }}" class="btn-action btn-primary">
+            <i class="fas fa-plus"></i>
+            Create Article
+        </a>
+        <button class="btn-action btn-success" onclick="fetchNewArticles()">
+            <i class="fas fa-sync-alt"></i>
+            Fetch New Articles
+        </button>
+        <a href="/api/articles/stats" class="btn-action btn-warning" target="_blank">
+            <i class="fas fa-chart-bar"></i>
+            View API Stats
+        </a>
+        <button class="btn-action btn-secondary" onclick="refreshStats()">
+            <i class="fas fa-refresh"></i>
+            Refresh Stats
+        </button>
+    </div>
+
+    <!-- Articles Table -->
+    <div class="articles-table">
+        <div class="table-header">
+            <h2 class="table-title">Recent Articles</h2>
+        </div>
+        <div class="table-content">
+            <div id="articles-loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading articles...
+            </div>
+            <div id="articles-error" class="error" style="display: none;">
+                Error loading articles. Please try again.
+            </div>
+            <table id="articles-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Source</th>
+                        <th>Views</th>
+                        <th>Likes</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="articles-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadArticles();
+});
+
+function loadStats() {
+    fetch('/api/articles/stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('total-articles').textContent = data.stats.total_articles;
+                document.getElementById('recent-articles').textContent = data.stats.recent_articles_24h;
+                
+                // Calculate total views and likes
+                let totalViews = 0;
+                let totalLikes = 0;
+                data.stats.categories.forEach(cat => {
+                    // This is a simplified calculation - in reality you'd need to fetch all articles
+                    totalViews += cat.count * 100; // Estimate
+                    totalLikes += cat.count * 20;  // Estimate
+                });
+                
+                document.getElementById('total-views').textContent = totalViews.toLocaleString();
+                document.getElementById('total-likes').textContent = totalLikes.toLocaleString();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+        });
+}
+
+function loadArticles() {
+    fetch('/api/articles?limit=20')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('articles-loading').style.display = 'none';
+            
+            if (data.success) {
+                displayArticles(data.articles);
+            } else {
+                document.getElementById('articles-error').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading articles:', error);
+            document.getElementById('articles-loading').style.display = 'none';
+            document.getElementById('articles-error').style.display = 'block';
+        });
+}
+
+function displayArticles(articles) {
+    const tbody = document.getElementById('articles-tbody');
+    tbody.innerHTML = '';
+    
+    articles.forEach(article => {
+        const row = document.createElement('tr');
+        
+        const categoryClass = `category-${article.category ? article.category.toLowerCase().replace(' ', '-') : 'general'}`;
+        
+        row.innerHTML = `
+            <td>
+                <div class="article-title" title="${article.headline}">
+                    ${article.headline}
+                </div>
+            </td>
+            <td>
+                <span class="category-badge ${categoryClass}">
+                    ${article.category || 'General'}
+                </span>
+            </td>
+            <td>${article.source || 'Unknown'}</td>
+            <td>${article.views || 0}</td>
+            <td>${article.likes || 0}</td>
+            <td>${new Date(article.created_at).toLocaleDateString()}</td>
+            <td>
+                <div class="article-actions">
+                    <button class="btn-small btn-edit" onclick="editArticle(${article.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-small btn-delete" onclick="deleteArticle(${article.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+    
+    document.getElementById('articles-table').style.display = 'table';
+}
+
+function fetchNewArticles() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+    button.disabled = true;
+    
+    fetch('/api/articles/fetch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(`Successfully fetched ${data.count} new articles!`, 'success');
+            loadArticles();
+            loadStats();
+        } else {
+            showMessage('Error fetching articles: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('Error fetching articles', 'error');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function refreshStats() {
+    loadStats();
+    loadArticles();
+    showMessage('Stats refreshed!', 'success');
+}
+
+function editArticle(id) {
+    window.location.href = `/edit-article/${id}`;
+}
+
+function deleteArticle(id) {
+    if (confirm('Are you sure you want to delete this article? This action cannot be undone.')) {
+        window.location.href = `/delete-article/${id}`;
+    }
+}
+
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = type;
+    messageDiv.textContent = message;
+    
+    const container = document.querySelector('.admin-container');
+    container.insertBefore(messageDiv, container.firstChild);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

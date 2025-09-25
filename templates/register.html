@@ -131,6 +131,94 @@
             transform: none;
         }
 
+        /* Username Suggestions */
+        .username-suggestions {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .username-suggestions.show {
+            display: block;
+        }
+
+        .suggestions-title {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .suggestion-item {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-1px);
+        }
+
+        /* Validation Messages */
+        .validation-message {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .validation-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .validation-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Password Toggle */
+        .password-input-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-blue);
+        }
+
+        .form-input.password-input {
+            padding-right: 3rem;
+        }
+
         .divider {
             text-align: center;
             margin: 1.5rem 0;
@@ -233,17 +321,28 @@
             <form method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required value="{{ username if username }}">
+                    <div class="validation-message" id="username-message"></div>
+                    <div class="username-suggestions" id="username-suggestions">
+                        <div class="suggestions-title">Try these available usernames:</div>
+                        <div id="suggestion-items"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required value="{{ email if email }}">
+                    <div class="validation-message" id="email-message"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" name="password" class="form-input" placeholder="Create a password" required>
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" class="form-input password-input" placeholder="Create a password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye" id="password-eye"></i>
+                        </button>
+                    </div>
                     <div class="password-requirements">
                         <strong>Password must contain:</strong>
                         <ul>
@@ -254,11 +353,19 @@
                             <li>One special character</li>
                         </ul>
                     </div>
+                    {% if password_error %}
+                    <div class="validation-message error">{{ password_error }}</div>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Confirm your password" required>
+                    <div class="password-input-container">
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-input password-input" placeholder="Confirm your password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="fas fa-eye" id="confirm_password-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-register">
@@ -279,4 +386,152 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const usernameMessage = document.getElementById('username-message');
+    const emailMessage = document.getElementById('email-message');
+    const usernameSuggestions = document.getElementById('username-suggestions');
+    const suggestionItems = document.getElementById('suggestion-items');
+    
+    let usernameTimeout;
+    let emailTimeout;
+    
+    // Username validation
+    usernameInput.addEventListener('input', function() {
+        clearTimeout(usernameTimeout);
+        const username = this.value.trim();
+        
+        if (username.length < 3) {
+            hideUsernameMessage();
+            hideSuggestions();
+            return;
+        }
+        
+        usernameTimeout = setTimeout(() => {
+            checkUsername(username);
+        }, 500);
+    });
+    
+    // Email validation
+    emailInput.addEventListener('input', function() {
+        clearTimeout(emailTimeout);
+        const email = this.value.trim();
+        
+        if (!email || !email.includes('@')) {
+            hideEmailMessage();
+            return;
+        }
+        
+        emailTimeout = setTimeout(() => {
+            checkEmail(email);
+        }, 500);
+    });
+    
+    function checkUsername(username) {
+        fetch('/api/check-username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                showUsernameMessage('Username is available!', 'success');
+                hideSuggestions();
+            } else {
+                showUsernameMessage(data.message, 'error');
+                if (data.suggestions && data.suggestions.length > 0) {
+                    showSuggestions(data.suggestions);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error checking username:', error);
+        });
+    }
+    
+    function checkEmail(email) {
+        fetch('/api/check-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                showEmailMessage('Email is available!', 'success');
+            } else {
+                showEmailMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking email:', error);
+        });
+    }
+    
+    function showUsernameMessage(message, type) {
+        usernameMessage.textContent = message;
+        usernameMessage.className = `validation-message ${type}`;
+    }
+    
+    function hideUsernameMessage() {
+        usernameMessage.className = 'validation-message';
+    }
+    
+    function showEmailMessage(message, type) {
+        emailMessage.textContent = message;
+        emailMessage.className = `validation-message ${type}`;
+    }
+    
+    function hideEmailMessage() {
+        emailMessage.className = 'validation-message';
+    }
+    
+    function showSuggestions(suggestions) {
+        suggestionItems.innerHTML = '';
+        suggestions.forEach(suggestion => {
+            const suggestionElement = document.createElement('span');
+            suggestionElement.className = 'suggestion-item';
+            suggestionElement.textContent = suggestion;
+            suggestionElement.addEventListener('click', function() {
+                usernameInput.value = suggestion;
+                hideSuggestions();
+                hideUsernameMessage();
+                showUsernameMessage('Username is available!', 'success');
+            });
+            suggestionItems.appendChild(suggestionElement);
+        });
+        usernameSuggestions.classList.add('show');
+    }
+    
+    function hideSuggestions() {
+        usernameSuggestions.classList.remove('show');
+    }
+    
+    // Password toggle function
+    window.togglePassword = function(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const eyeIcon = document.getElementById(fieldId + '-eye');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    };
+});
+</script>
 {% endblock %}

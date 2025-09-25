@@ -23,6 +23,28 @@
             transform: translateY(-1px);
         }
 
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+            transform: translateY(-1px);
+        }
+
         /* Hero Section */
         .hero {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
@@ -206,6 +228,122 @@
                 gap: 1.5rem;
             }
         }
+
+        /* Filtered Articles Section */
+        .filtered-articles-section {
+            padding: 4rem 0;
+            background: var(--bg-light);
+        }
+
+        .filtered-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .filtered-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .filtered-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            margin-bottom: 2rem;
+        }
+
+        .filtered-articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .filtered-article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            border: 1px solid var(--border-light);
+        }
+
+        .filtered-article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Article image removed */
+
+        .filtered-article-card .article-content {
+            padding: 1.5rem;
+        }
+
+        .filtered-article-card .article-category {
+            display: inline-block;
+            background: var(--accent-orange);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .filtered-article-card .article-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .filtered-article-card .article-title a {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .filtered-article-card .article-title a:hover {
+            color: var(--primary-blue);
+        }
+
+        .filtered-article-card .article-excerpt {
+            color: var(--text-gray);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .filtered-article-card .article-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+
+        .filtered-article-card .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .filtered-article-card .article-meta i {
+            font-size: 0.8rem;
+        }
+
+        /* Responsive for filtered articles */
+        @media (max-width: 768px) {
+            .filtered-articles-grid {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+            
+            .filtered-title {
+                font-size: 2rem;
+            }
+        }
 {% endblock %}
 
 {% block content %}
@@ -296,4 +434,52 @@
             {% endfor %}
         </div>
     </section>
+
+    <!-- Filtered Articles Section -->
+    {% if selected_category and filtered_articles %}
+    <section class="filtered-articles-section">
+        <div class="container">
+            <div class="filtered-header">
+                <h2 class="filtered-title">{{ selected_category }} Articles</h2>
+                <p class="filtered-subtitle">Showing {{ filtered_articles|length }} articles in {{ selected_category }}</p>
+                <a href="{{ url_for('categories') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to All Categories
+                </a>
+            </div>
+            
+            <div class="filtered-articles-grid">
+                {% for article in filtered_articles %}
+                <article class="filtered-article-card">
+                    <div class="article-content">
+                        <div class="article-category">{{ article.category }}</div>
+                        <h3 class="article-title">
+                            <a href="{{ url_for('view_article', article_id=article.id) }}">
+                                {{ article.headline }}
+                            </a>
+                        </h3>
+                        <p class="article-excerpt">
+                            {{ article.content[:150] }}{% if article.content|length > 150 %}...{% endif %}
+                        </p>
+                        <div class="article-meta">
+                            <span class="article-views">
+                                <i class="fas fa-eye"></i>
+                                {{ article.views or 0 }} views
+                            </span>
+                            <span class="article-likes">
+                                <i class="fas fa-heart"></i>
+                                {{ article.likes or 0 }} likes
+                            </span>
+                            <span class="article-date">
+                                <i class="fas fa-calendar"></i>
+                                {{ article.created_at[:10] if article.created_at else 'Recent' }}
+                            </span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
 {% endblock %}

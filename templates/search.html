@@ -151,16 +151,7 @@
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .article-image {
-            width: 100%;
-            height: 200px;
-            background: var(--bg-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            font-size: 3rem;
-        }
+        /* Article image removed */
 
         .article-content {
             padding: 1.5rem;
@@ -356,10 +347,6 @@
             <div class="articles-grid">
                 {% for article in articles %}
                 <article class="article-card">
-                    <div class="article-image">
-                        <i class="fas fa-newspaper"></i>
-                    </div>
-                    
                     <div class="article-content">
                         <span class="article-category">{{ article.category }}</span>
                         

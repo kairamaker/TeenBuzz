@@ -1,6 +1,6 @@
 {
   "use_local": true,
   "local_db_path": "teenbuzz_local.db",
-  "supabase_url": "",
-  "supabase_key": ""
+  "supabase_url": "https://kkevjmmtwvvmrxmqpltv.supabase.co",
+  "supabase_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrZXZqbW10d3Z2bXJ4bXFwbHR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4NDc5MjgsImV4cCI6MjA3MzQyMzkyOH0.4hc0QRld2s79BbrmSxTqEQhsI5tPzTE0rCGfLx2c"
 }

@@ -66,6 +66,30 @@ class AuthManager:
         
         return True, "Username is valid"
     
+    def generate_username_suggestions(self, base_username):
+        """Generate alternative username suggestions"""
+        import random
+        suggestions = []
+        
+        # Add numbers
+        for i in range(1, 4):
+            suggestion = f"{base_username}{i}"
+            existing = self.db.select('users', where='username = ?', params=(suggestion,), limit=1)
+            if not existing:
+                suggestions.append(suggestion)
+                if len(suggestions) >= 3:
+                    break
+        
+        # Add random numbers if we need more
+        while len(suggestions) < 3:
+            random_num = random.randint(100, 999)
+            suggestion = f"{base_username}{random_num}"
+            existing = self.db.select('users', where='username = ?', params=(suggestion,), limit=1)
+            if not existing and suggestion not in suggestions:
+                suggestions.append(suggestion)
+        
+        return suggestions[:3]
+
     def register_user(self, username, email, password, confirm_password):
         """Register a new user"""
         # Validation
@@ -87,7 +111,8 @@ class AuthManager:
         # Check if user already exists
         existing_user = self.db.select('users', where='username = ?', params=(username,), limit=1)
         if existing_user:
-            return False, "Username already exists"
+            suggestions = self.generate_username_suggestions(username)
+            return False, f"Username already exists. Try: {', '.join(suggestions)}"
         
         existing_email = self.db.select('users', where='email = ?', params=(email,), limit=1)
         if existing_email:

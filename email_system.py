@@ -8,14 +8,16 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+from email_config import get_email_config, is_email_configured
 
 class EmailManager:
     def __init__(self):
         # Email configuration
-        self.smtp_server = "smtp.gmail.com"
-        self.smtp_port = 587
-        self.email_address = "teenbuzzteam@gmail.com"
-        self.email_password = os.getenv("EMAIL_PASSWORD", "your-app-password-here")
+        config = get_email_config()
+        self.smtp_server = config['smtp_server']
+        self.smtp_port = config['smtp_port']
+        self.email_address = config['email_address']
+        self.email_password = config['email_password']
         
     def send_password_reset_email(self, user_email, reset_token, username):
         """Send password reset email"""
@@ -150,8 +152,15 @@ class EmailManager:
         except Exception as e:
             return False, f"Failed to send welcome email: {str(e)}"
     
+    def is_configured(self):
+        """Check if email is properly configured"""
+        return is_email_configured()
+    
     def test_email_connection(self):
         """Test email connection"""
+        if not self.is_configured():
+            return False, "Email not configured. Please set EMAIL_PASSWORD environment variable."
+        
         try:
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             server.starttls()

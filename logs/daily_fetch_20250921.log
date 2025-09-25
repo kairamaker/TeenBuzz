@@ -1,0 +1,38 @@
+2025-09-21 10:43:05,112 - INFO - 🚀 Starting daily article automation...
+2025-09-21 10:43:05,112 - INFO - 📅 Date: 2025-09-21 10:43:05
+2025-09-21 10:43:05,114 - INFO - 📊 Initial stats: 30 total articles, 20 recent
+2025-09-21 10:43:05,114 - INFO - 📰 Fetching articles from RSS feeds...
+2025-09-21 10:43:13,073 - INFO - 📊 Fetched 15 articles from RSS feeds
+2025-09-21 10:43:13,073 - INFO - 💾 Adding articles to database...
+2025-09-21 10:43:13,075 - INFO - ✅ Successfully added 15 new articles
+2025-09-21 10:43:13,076 - INFO - 📊 Final stats: 30 total articles, 20 recent
+2025-09-21 10:43:13,076 - INFO - 📂 Category breakdown:
+2025-09-21 10:43:13,076 - INFO -   - General: 13 articles
+2025-09-21 10:43:13,076 - INFO -   - Technology: 6 articles
+2025-09-21 10:43:13,076 - INFO -   - Social Issues: 3 articles
+2025-09-21 10:43:13,077 - INFO -   - Science: 3 articles
+2025-09-21 10:43:13,077 - INFO -   - Health: 2 articles
+2025-09-21 10:43:13,077 - INFO -   - Environment: 2 articles
+2025-09-21 10:43:13,077 - INFO -   - Education: 1 articles
+2025-09-21 10:43:13,077 - INFO - 🧹 Running weekly cleanup...
+2025-09-21 10:43:13,079 - INFO - 🧹 Cleaned up 4 articles older than 30 days
+2025-09-21 10:43:13,079 - INFO - ✅ Daily article automation completed successfully!
+2025-09-21 10:44:45,330 - INFO - 🚀 Starting daily article automation...
+2025-09-21 10:44:45,331 - INFO - 📅 Date: 2025-09-21 10:44:45
+2025-09-21 10:44:45,331 - INFO - 📊 Initial stats: 26 total articles, 20 recent
+2025-09-21 10:44:45,331 - INFO - 📰 Fetching articles from RSS feeds...
+2025-09-21 10:44:53,297 - INFO - 📊 Fetched 15 articles from RSS feeds
+2025-09-21 10:44:53,297 - INFO - 💾 Adding articles to database...
+2025-09-21 10:44:53,299 - INFO - ✅ Successfully added 15 new articles
+2025-09-21 10:44:53,299 - INFO - 📊 Final stats: 26 total articles, 20 recent
+2025-09-21 10:44:53,300 - INFO - 📂 Category breakdown:
+2025-09-21 10:44:53,300 - INFO -   - General: 13 articles
+2025-09-21 10:44:53,300 - INFO -   - Technology: 4 articles
+2025-09-21 10:44:53,300 - INFO -   - Social Issues: 2 articles
+2025-09-21 10:44:53,300 - INFO -   - Science: 2 articles
+2025-09-21 10:44:53,300 - INFO -   - Health: 2 articles
+2025-09-21 10:44:53,300 - INFO -   - Environment: 2 articles
+2025-09-21 10:44:53,300 - INFO -   - Education: 1 articles
+2025-09-21 10:44:53,300 - INFO - 🧹 Running weekly cleanup...
+2025-09-21 10:44:53,301 - INFO - 🧹 No old articles to clean up
+2025-09-21 10:44:53,301 - INFO - ✅ Daily article automation completed successfully!
