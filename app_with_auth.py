@@ -128,7 +128,6 @@ def home():
             continue_reading = []
             print(f"📰 Found {len(articles)} general articles for non-authenticated user")
         
-        flash(f'✅ Using local database: {get_database_status()}', 'success')
         
         return render_template('index_modern.html', 
                              articles=articles, 
@@ -148,7 +147,6 @@ def search_articles():
         # Always try to get articles from database
         articles = get_articles_from_db(limit=20)
         print(f"DEBUG: Found {len(articles)} articles from database")
-        flash(f'✅ Using local database: {get_database_status()}', 'success')
         
         # Apply filters with enhanced search
         if query:
@@ -400,7 +398,6 @@ def view_article(article_id):
                                            params=(article['category'], article_id), 
                                            limit=6)
                 
-                flash(f'✅ Using local database: {get_database_status()}', 'success')
                 print("✅ About to render template")
                 return render_template('article_simple.html', 
                                      article=article, 
@@ -411,7 +408,6 @@ def view_article(article_id):
                 return redirect(url_for('home'))
         else:
             print("❌ Database connection failed")
-            flash('Using sample data while database connection is being resolved.', 'info')
             return redirect(url_for('home'))
     except Exception as e:
         print(f"❌ Error viewing article: {e}")
