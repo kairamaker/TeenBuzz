@@ -329,6 +329,8 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Simplified profile styles */
     </style>
 </head>
 <body>
@@ -341,7 +343,6 @@
             <div class="nav-menu">
                 <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('categories') }}" class="nav-link">Categories</a>
-                <a href="{{ url_for('trending') }}" class="nav-link">Trending</a>
                 <a href="{{ url_for('search_articles') }}" class="nav-link">Search</a>
                 {% if is_authenticated %}
                     <a href="{{ url_for('user_profile') }}" class="nav-link">Profile</a>
@@ -379,18 +380,6 @@
 
             <div class="profile-stats">
                 <div class="stat-card">
-                    <div class="stat-number">{{ user_stats.articles_read or 0 }}</div>
-                    <div class="stat-label">Articles Read</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ user_stats.articles_liked or 0 }}</div>
-                    <div class="stat-label">Articles Liked</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">{{ user_stats.comments_made or 0 }}</div>
-                    <div class="stat-label">Comments Made</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-number">{{ user_stats.member_since[:10] if user_stats.member_since else 'Recent' }}</div>
                     <div class="stat-label">Member Since</div>
                 </div>
@@ -399,15 +388,7 @@
 
         <!-- Profile Tabs -->
         <div class="profile-tabs">
-            <a href="{{ url_for('preferences') }}" class="tab-button active">
-                <i class="fas fa-cog"></i>
-                Preferences
-            </a>
-            <button class="tab-button" onclick="showTab('recommendations')">
-                <i class="fas fa-star"></i>
-                For You
-            </button>
-            <button class="tab-button" onclick="showTab('settings')">
+            <button class="tab-button active" onclick="showTab('settings')">
                 <i class="fas fa-user-edit"></i>
                 Settings
             </button>
@@ -415,70 +396,8 @@
 
         <!-- Tab Content -->
         <div class="tab-content">
-            <!-- Preferences Tab -->
-            <div id="preferences-tab" class="tab-panel">
-                <h2>Your Preferences</h2>
-                <p>Customize your TeenBuzz experience by selecting your interests.</p>
-                
-                <form method="POST" action="{{ url_for('update_preferences') }}">
-                    <div class="form-group">
-                        <label>Favorite Categories</label>
-                        <div class="checkbox-group">
-                            {% for category in available_categories %}
-                            <div class="checkbox-item">
-                                <input type="checkbox" 
-                                       name="categories" 
-                                       value="{{ category }}"
-                                       {% if category in user_preferences.categories %}checked{% endif %}>
-                                <label>{{ category }}</label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Topics of Interest</label>
-                        <div class="checkbox-group">
-                            {% for topic in available_topics[:20] %}
-                            <div class="checkbox-item">
-                                <input type="checkbox" 
-                                       name="topics" 
-                                       value="{{ topic }}"
-                                       {% if topic in user_preferences.topics %}checked{% endif %}>
-                                <label>{{ topic.title() }}</label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        Save Preferences
-                    </button>
-                </form>
-            </div>
-
-            <!-- Recommendations Tab -->
-            <div id="recommendations-tab" class="tab-panel hidden">
-                <h2>Recommended for You</h2>
-                <p>Articles tailored to your interests and reading history.</p>
-                
-                <div class="recommendations-grid">
-                    {% for article in recommended_articles %}
-                    <div class="article-card">
-                        <h3>{{ article.headline }}</h3>
-                        <p>{{ article.content[:150] }}...</p>
-                        <div class="article-meta">
-                            <span>{{ article.category }}</span>
-                            <span>{{ article.views }} views</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
             <!-- Settings Tab -->
-            <div id="settings-tab" class="tab-panel hidden">
+            <div id="settings-tab" class="tab-panel">
                 <h2>Account Settings</h2>
                 <p>Manage your account information and security settings.</p>
                 

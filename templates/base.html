@@ -243,8 +243,8 @@
             
             <div class="nav-menu">
                 <a href="{{ url_for('categories') }}" class="nav-link {% if request.endpoint == 'categories' %}active{% endif %}">Categories</a>
-                <a href="{{ url_for('trending') }}" class="nav-link {% if request.endpoint == 'trending' %}active{% endif %}">Trending</a>
                 <a href="{{ url_for('search_articles') }}" class="nav-link {% if request.endpoint == 'search_articles' %}active{% endif %}">Search</a>
+                <!-- Bookmarks removed - not needed -->
             </div>
             
             <div class="user-actions">

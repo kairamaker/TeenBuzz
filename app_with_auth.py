@@ -67,10 +67,10 @@ def enhanced_search_filter(articles, query):
     query_words = query_lower.split()
     
     def article_matches_query(article):
-        headline = article.get('headline', '').lower()
-        content = article.get('content', '').lower()
-        tags = article.get('tags', '').lower()
-        category = article.get('category', '').lower()
+        headline = (article.get('headline') or '').lower()
+        content = (article.get('content') or '').lower()
+        tags = (article.get('tags') or '').lower()
+        category = (article.get('category') or '').lower()
         
         # Check if any query word matches in headline, content, tags, or category
         for word in query_words:
@@ -171,15 +171,9 @@ def search_articles():
         print(f"Error in search route: {e}")
         return render_template('search.html', articles=[], query=query, category=category, format_date=format_date)
 
-@app.route('/trending')
-def trending():
-    """Trending articles page"""
-    try:
-        articles = get_articles_from_db(limit=10)
-        return render_template('trending.html', articles=articles)
-    except Exception as e:
-        print(f"Error in trending route: {e}")
-        return render_template('trending.html', articles=[])
+# Trending page removed - feature for future release
+
+# Duplicate bookmarks route removed
 
 @app.route('/categories')
 def categories():
@@ -228,7 +222,18 @@ def categories():
             print(f"🔍 Filtering by category: {selected_category} - Found {len(filtered_articles)} articles")
         
         print(f"📂 Loaded {len(categories)} categories for categories page")
-        return render_template('categories.html', 
+        print(f"🔍 Categories data: {[cat['name'] for cat in categories]}")
+        
+        # Debug: Check if categories is empty
+        if not categories:
+            print("⚠️ No categories found - this might be the issue")
+            # Try to get some basic category data
+            all_articles = db.select('articles', limit=10)
+            print(f"📰 Found {len(all_articles)} total articles")
+            if all_articles:
+                print(f"📰 Sample article categories: {[a.get('category', 'None') for a in all_articles[:5]]}")
+        
+        return render_template('categories_simple.html', 
                              categories=categories, 
                              selected_category=selected_category,
                              filtered_articles=filtered_articles)
@@ -348,149 +353,17 @@ def like_article(article_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/bookmark-article/<int:article_id>', methods=['POST'])
-@login_required
-def bookmark_article(article_id):
-    """Toggle bookmark for an article"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        success, message = article_manager.toggle_bookmark(article_id, user['id'])
-        
-        if success:
-            return jsonify({
-                "success": True,
-                "message": message
-            })
-        else:
-            return jsonify({"error": message}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Bookmark functionality removed - not needed
 
-@app.route('/comment/<int:article_id>', methods=['POST'])
-@login_required
-def create_comment(article_id):
-    """Create a new comment"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        data = request.get_json()
-        content = data.get('content', '').strip()
-        parent_id = data.get('parent_id')
-        
-        success, message = comments_manager.create_comment(
-            article_id=article_id,
-            user_id=user['id'],
-            content=content,
-            parent_id=parent_id
-        )
-        
-        if success:
-            return jsonify({
-                "success": True,
-                "message": message
-            })
-        else:
-            return jsonify({"error": message}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Comment functionality removed - not needed
 
-@app.route('/comment/<int:comment_id>', methods=['PUT'])
-@login_required
-def update_comment(comment_id):
-    """Update a comment"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        data = request.get_json()
-        content = data.get('content', '').strip()
-        
-        success, message = comments_manager.update_comment(
-            comment_id=comment_id,
-            user_id=user['id'],
-            content=content
-        )
-        
-        if success:
-            return jsonify({
-                "success": True,
-                "message": message
-            })
-        else:
-            return jsonify({"error": message}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# All comment functionality removed - not needed
 
-@app.route('/comment/<int:comment_id>', methods=['DELETE'])
-@login_required
-def delete_comment(comment_id):
-    """Delete a comment"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        success, message = comments_manager.delete_comment(
-            comment_id=comment_id,
-            user_id=user['id']
-        )
-        
-        if success:
-            return jsonify({
-                "success": True,
-                "message": message
-            })
-        else:
-            return jsonify({"error": message}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Like comment functionality removed - not needed
 
-@app.route('/like-comment/<int:comment_id>', methods=['POST'])
-@login_required
-def like_comment(comment_id):
-    """Toggle like for a comment"""
-    try:
-        user = get_current_user()
-        if not user:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        success, message = comments_manager.toggle_comment_like(comment_id, user['id'])
-        
-        if success:
-            return jsonify({
-                "success": True,
-                "message": message
-            })
-        else:
-            return jsonify({"error": message}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Bookmarks route removed - not needed
 
-@app.route('/comments/<int:article_id>')
-def get_comments(article_id):
-    """Get comments for an article"""
-    try:
-        comments, message = comments_manager.get_comments(article_id)
-        
-        return jsonify({
-            "success": True,
-            "comments": comments,
-            "message": message
-        })
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Comments route removed - not needed
 
 @app.route('/article/<int:article_id>')
 def view_article(article_id):
@@ -529,10 +402,8 @@ def view_article(article_id):
                 
                 flash(f'✅ Using local database: {get_database_status()}', 'success')
                 print("✅ About to render template")
-                return render_template('article_improved.html', 
+                return render_template('article_simple.html', 
                                      article=article, 
-                                     comments=comments,
-                                     related_articles=related_articles,
                                      format_date=format_date)
             else:
                 print("❌ No article found")
@@ -834,7 +705,6 @@ def forgot_password():
             return render_template('forgot_password.html', error_message=error_message)
         
         # Email exists, proceed with password reset
-        # Generate a simple reset token (since email system isn't fully configured)
         import secrets
         from datetime import datetime, timedelta
         
@@ -853,18 +723,24 @@ def forgot_password():
             db.insert('password_reset_tokens', token_data)
             username = user[0]['username']
             
-            # Try to send email
+            # Try to send email first
             if email_manager.is_configured():
                 success, message = email_manager.send_password_reset_email(email, token, username)
                 if success:
                     flash('Password reset email sent! Check your inbox and follow the instructions.', 'success')
                 else:
                     flash(f'Email could not be sent: {message}', 'error')
-                    flash(f'Password reset token: {token}', 'info')
+                    # Fallback to showing link
+                    reset_url = f"http://localhost:5003/reset-password/{token}"
+                    return render_template('password_reset_link.html', 
+                                         username=username, 
+                                         reset_url=reset_url)
             else:
-                # Email not configured, show token
-                flash(f'Password reset token generated for {username}: {token}', 'success')
-                flash('Note: Email system not configured. Use the token above to reset your password.', 'info')
+                # Email not configured, show link page
+                reset_url = f"http://localhost:5003/reset-password/{token}"
+                return render_template('password_reset_link.html', 
+                                     username=username, 
+                                     reset_url=reset_url)
             
             return redirect(url_for('login'))
         except Exception as e:
@@ -961,10 +837,12 @@ def user_profile():
         flash(f'Error loading profile: {str(e)}', 'error')
         return redirect(url_for('home'))
 
+# Preferences route removed - simplified app
+"""
 @app.route('/preferences', methods=['GET', 'POST'])
 @login_required
 def preferences():
-    """New preferences page"""
+    \"\"\"New preferences page\"\"\"
     if request.method == 'GET':
         try:
             print("🔍 Loading preferences page...")
@@ -999,7 +877,7 @@ def preferences():
             print(f"📋 Available categories: {len(available_categories)}")
             print(f"📋 Available topics: {len(available_topics)}")
             
-            return render_template('preferences_new.html',
+            return render_template('preferences_modern.html',
                                  user_preferences=preferences,
                                  available_categories=available_categories,
                                  available_topics=available_topics)
@@ -1012,38 +890,10 @@ def preferences():
     
     else:  # POST request
         return update_preferences()
+"""
 
-@app.route('/update-preferences', methods=['POST'])
-@login_required
-def update_preferences():
-    """Update user preferences"""
-    try:
-        user = get_current_user()
-        
-        # Get form data using getlist (should work now with new form)
-        categories = request.form.getlist('categories')
-        topics = request.form.getlist('topics')
-        
-        # Prepare preferences data
-        preferences_data = {
-            'categories': ','.join(categories),
-            'topics': ','.join(topics)
-        }
-        
-        # Update preferences
-        success, message = user_manager.update_user_preferences(user['id'], preferences_data)
-        
-        if success:
-            flash('Preferences updated successfully!', 'success')
-            return redirect(url_for('preferences'))
-        else:
-            flash(f'Error: {message}', 'error')
-            return redirect(url_for('preferences'))
-            
-    except Exception as e:
-        print(f"❌ Error in update_preferences: {str(e)}")
-        flash(f'Error updating preferences: {str(e)}', 'error')
-        return redirect(url_for('preferences'))
+# Preferences routes removed - simplified app
+# All preferences functionality has been removed for simplicity
 
 @app.route('/update-profile', methods=['POST'])
 @login_required

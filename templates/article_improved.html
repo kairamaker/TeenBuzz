@@ -109,38 +109,7 @@
             border-top: 1px solid var(--border-light);
         }
 
-        .btn-like, .btn-bookmark {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: 2px solid var(--border-light);
-            border-radius: 25px;
-            background: white;
-            color: var(--text-gray);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-like:hover, .btn-bookmark:hover {
-            border-color: var(--primary-blue);
-            color: var(--primary-blue);
-            transform: translateY(-2px);
-        }
-
-        .btn-like.liked {
-            background: #dc2626;
-            border-color: #dc2626;
-            color: white;
-        }
-
-        .btn-bookmark.bookmarked {
-            background: var(--accent-orange);
-            border-color: var(--accent-orange);
-            color: white;
-        }
+        /* Bookmark functionality removed - not needed */
 
         /* Comments Section */
         .comments-section {
@@ -519,22 +488,14 @@
         </a>
 
         <article>
-            <header class="article-header">
+                <header class="article-header">
                 <span class="article-category">{{ article.category }}</span>
                 <h1 class="article-title">{{ article.headline }}</h1>
-                
-                <div class="article-meta">
+                    
+                    <div class="article-meta">
                     <div class="meta-item">
                         <i class="fas fa-calendar"></i>
                         <span>{{ format_date(article.created_at) if format_date else 'Recent' }}</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-eye"></i>
-                        <span>{{ article.views or 0 }} views</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-heart"></i>
-                        <span id="like-count">{{ article.likes or 0 }} likes</span>
                     </div>
                     {% if article.source %}
                     <div class="meta-item">
@@ -552,18 +513,7 @@
                     {% endif %}
                 </div>
                 
-                {% if is_authenticated %}
-                <div class="article-actions">
-                    <button class="btn-like" onclick="toggleLike({{ article.id }})" id="like-btn">
-                        <i class="fas fa-heart"></i>
-                        <span id="like-text">Like</span>
-                    </button>
-                    <button class="btn-bookmark" onclick="toggleBookmark({{ article.id }})" id="bookmark-btn">
-                        <i class="fas fa-bookmark"></i>
-                        <span id="bookmark-text">Bookmark</span>
-                    </button>
-                </div>
-                {% endif %}
+                <!-- Bookmark functionality removed - not needed -->
                 
                 <!-- Reading progress tracking removed -->
             </header>
@@ -579,7 +529,7 @@
                     <span>Share</span>
                 </button>
             </div>
-            {% endif %}
+                {% endif %}
         </article>
 
         <!-- Comments Section -->
@@ -591,7 +541,7 @@
                     <span class="comments-count" id="comments-count">{{ comments|length if comments else 0 }}</span>
                 </h2>
             </div>
-
+            
             {% if is_authenticated %}
             <!-- Comment Form -->
             <div class="comment-form-container">
@@ -627,7 +577,7 @@
                                 <div class="author-info">
                                     <span class="author-name">{{ comment.username }}</span>
                                     <span class="comment-date">{{ format_date(comment.created_at) if format_date else comment.created_at[:10] }}</span>
-                                </div>
+        </div>
                             </div>
                             {% if is_authenticated and session.user_id == comment.user_id %}
                             <div class="comment-actions">
@@ -644,10 +594,6 @@
                             {{ comment.content|replace('\n', '<br>')|safe }}
                         </div>
                         <div class="comment-footer">
-                            <button class="btn-like-comment" onclick="likeComment({{ comment.id }})">
-                                <i class="fas fa-heart"></i>
-                                <span class="like-count">{{ comment.likes or 0 }}</span>
-                            </button>
                             <button class="btn-reply" onclick="replyToComment({{ comment.id }})">
                                 <i class="fas fa-reply"></i>
                                 Reply
@@ -684,10 +630,6 @@
                                     {{ reply.content|replace('\n', '<br>')|safe }}
                                 </div>
                                 <div class="comment-footer">
-                                    <button class="btn-like-comment" onclick="likeComment({{ reply.id }})">
-                                        <i class="fas fa-heart"></i>
-                                        <span class="like-count">{{ reply.likes or 0 }}</span>
-                                    </button>
                                 </div>
                             </div>
                             {% endfor %}
@@ -699,8 +641,8 @@
                 <div class="no-comments">
                     <p>No comments yet. Be the first to share your thoughts!</p>
                 </div>
-                {% endif %}
-            </div>
+                    {% endif %}
+                </div>
         </section>
 
         <!-- Related Articles -->
@@ -729,7 +671,7 @@
             </div>
         </section>
         {% endif %}
-    </div>
+        </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -768,108 +710,8 @@
         // Reading Progress Tracking
         // Reading progress tracking removed - no longer needed
 
-        // Like and Bookmark functionality
-        function toggleLike(articleId) {
-            const likeBtn = document.getElementById('like-btn');
-            const likeText = document.getElementById('like-text');
-            const likeCount = document.getElementById('like-count');
-            
-            // Disable button during request
-            likeBtn.disabled = true;
-            
-            fetch(`/like-article/${articleId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update UI
-                    if (data.message.includes('liked')) {
-                        likeBtn.classList.add('liked');
-                        likeText.textContent = 'Liked';
-                    } else {
-                        likeBtn.classList.remove('liked');
-                        likeText.textContent = 'Like';
-                    }
-                    
-                    // Update like count
-                    if (likeCount) {
-                        likeCount.textContent = `${data.like_count} likes`;
-                    }
-                } else {
-                    console.error('Error:', data.error);
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error liking article');
-            })
-            .finally(() => {
-                likeBtn.disabled = false;
-            });
-        }
 
-        function toggleBookmark(articleId) {
-            const bookmarkBtn = document.getElementById('bookmark-btn');
-            const bookmarkText = document.getElementById('bookmark-text');
-            
-            // Disable button during request
-            bookmarkBtn.disabled = true;
-            
-            fetch(`/bookmark-article/${articleId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update UI
-                    if (data.message.includes('bookmarked')) {
-                        bookmarkBtn.classList.add('bookmarked');
-                        bookmarkText.textContent = 'Bookmarked';
-                    } else {
-                        bookmarkBtn.classList.remove('bookmarked');
-                        bookmarkText.textContent = 'Bookmark';
-                    }
-                } else {
-                    console.error('Error:', data.error);
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error bookmarking article');
-            })
-            .finally(() => {
-                bookmarkBtn.disabled = false;
-            });
-        }
-
-        function bookmarkArticle() {
-            const btn = event.target.closest('.action-btn');
-            const icon = btn.querySelector('i');
-            const text = btn.querySelector('span');
-            
-            if (icon.classList.contains('fas')) {
-                icon.className = 'far fa-bookmark';
-                text.textContent = 'Saved';
-                btn.style.background = 'var(--accent-orange)';
-                btn.style.color = 'white';
-                btn.style.borderColor = 'var(--accent-orange)';
-            } else {
-                icon.className = 'fas fa-bookmark';
-                text.textContent = 'Save';
-                btn.style.background = 'white';
-                btn.style.color = 'var(--text-gray)';
-                btn.style.borderColor = 'var(--border-light)';
-            }
-        }
+        // Bookmark functionality removed - not needed
 
         // Comments functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -1005,26 +847,6 @@
             });
         }
 
-        function likeComment(commentId) {
-            fetch(`/like-comment/${commentId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // Simple reload to update like count
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error liking comment');
-            });
-        }
 
         function replyToComment(commentId) {
             // For now, just scroll to comment form

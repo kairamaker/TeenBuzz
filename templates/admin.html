@@ -36,7 +36,7 @@
                 <nav class="nav-menu">
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                        <a href="{{ url_for('user_profile') }}" class="nav-link">Profile</a>
                         <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
                     {% else %}
                         <a href="{{ url_for('login') }}" class="nav-link">Login</a>

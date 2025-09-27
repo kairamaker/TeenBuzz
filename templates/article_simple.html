@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.headline }} - TeenBuzz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .article-container {
+        max-width: 600px !important;
+        margin: 3rem auto !important;
+        padding: 0 4rem !important;
+        background-color: #f8f9fa !important;
+        border: 2px solid #007bff !important;
+    }
+    
+    .article-header {
+        margin-bottom: 2rem;
+    }
+    
+    .article-category {
+        background: var(--primary-blue);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .article-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .article-meta {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light);
+        flex-wrap: wrap;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-gray);
+        font-size: 0.9rem;
+    }
+    
+    .meta-item i {
+        color: var(--primary-blue);
+    }
+    
+    .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-dark);
+        margin-bottom: 3rem;
+        text-align: justify;
+        max-width: 100%;
+    }
+    
+    .article-content p {
+        margin-bottom: 1.8rem;
+        text-indent: 0;
+        padding: 0;
+    }
+    
+    .article-content h2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 2rem 0 1rem 0;
+    }
+    
+    .article-content h3 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 1.5rem 0 1rem 0;
+    }
+    
+    .article-content ul, .article-content ol {
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+    
+    .article-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .article-content blockquote {
+        border-left: 4px solid var(--primary-blue);
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+        color: var(--text-gray);
+    }
+    
+    .article-content a {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+    
+    .article-content a:hover {
+        text-decoration: underline;
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--primary-blue);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    
+    .back-button:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .article-container {
+            max-width: 100%;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .article-title {
+            font-size: 2rem;
+        }
+        
+        .article-meta {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .article-content {
+            font-size: 1rem;
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-container">
+    <a href="{{ url_for('home') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Back to Articles
+    </a>
+    
+    <article class="article">
+        <header class="article-header">
+            <div class="article-category">{{ article.category }}</div>
+            <h1 class="article-title">{{ article.headline }}</h1>
+            
+            <div class="article-meta">
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ format_date(article.created_at) if format_date else 'Recent' }}</span>
+                </div>
+                {% if article.source %}
+                <div class="meta-item">
+                    <i class="fas fa-newspaper"></i>
+                    <span>{{ article.source }}</span>
+                </div>
+                {% endif %}
+                {% if article.url %}
+                <div class="meta-item">
+                    <i class="fas fa-external-link-alt"></i>
+                    <a href="{{ article.url }}" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); text-decoration: none;">
+                        View Original
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="article-content">
+            {{ article.content|replace('\n', '<br>')|safe }}
+        </div>
+    </article>
+</div>
+{% endblock %}

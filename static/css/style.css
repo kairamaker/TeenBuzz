@@ -40,6 +40,23 @@ body {
     padding: 0 20px;
 }
 
+/* Article Container Styles */
+.article-container {
+    max-width: 500px !important;
+    margin: 3rem auto !important;
+    padding: 0 6rem !important;
+    background-color: #ff0000 !important;
+    border: 5px solid #00ff00 !important;
+}
+
+@media (max-width: 768px) {
+    .article-container {
+        max-width: 100% !important;
+        margin: 2rem auto !important;
+        padding: 0 2rem !important;
+    }
+}
+
 /* Typography */
 h1, h2, h3, h4 {
     font-weight: 600;

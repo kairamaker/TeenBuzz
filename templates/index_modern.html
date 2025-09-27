@@ -196,17 +196,19 @@
 
         .articles-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .article-card {
             background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            min-height: 200px;
         }
 
         .article-card:hover {
@@ -217,7 +219,7 @@
         /* Article image removed */
 
         .article-content {
-            padding: 1.5rem;
+            /* Padding removed - now on .article-card */
         }
 
         .article-category {
@@ -475,43 +477,10 @@
                     <i class="fas fa-compass"></i>
                     Explore Categories
                 </a>
-                <a href="{{ url_for('trending') }}" class="btn-secondary">
-                    <i class="fas fa-fire"></i>
-                    See What's Trending
-                </a>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section">
-        <div class="features-container">
-            <h2 class="section-title">Why Choose TeenBuzz?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <h3 class="feature-title">Personalized Content</h3>
-                    <p class="feature-description">Get articles tailored to your interests and reading habits. Our AI learns what you care about most.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3 class="feature-title">Real-Time Updates</h3>
-                    <p class="feature-description">Stay ahead with breaking news and trending topics that matter to your generation.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3 class="feature-title">Safe & Reliable</h3>
-                    <p class="feature-description">Trusted sources and fact-checked content to keep you informed without the noise.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Continue Reading Section -->
     {% if continue_reading and is_authenticated %}
@@ -544,12 +513,8 @@
     <section class="articles-section">
         <div class="articles-container">
             <div class="articles-header">
-                {% if is_authenticated %}
-                    <h2 class="articles-title">📰 Articles For You</h2>
-                    <p class="articles-subtitle">Personalized based on your interests</p>
-                {% else %}
-                    <h2 class="articles-title">Latest Articles</h2>
-                {% endif %}
+                <h2 class="articles-title">📰 Articles</h2>
+                <p class="articles-subtitle">Latest news and stories</p>
                 <a href="{{ url_for('categories') }}" class="view-all-btn">
                     <i class="fas fa-arrow-right"></i>
                     View All
@@ -573,16 +538,6 @@
                         </p>
                         
                         <div class="article-meta">
-                            <div class="article-stats">
-                                <div class="stat">
-                                    <i class="fas fa-eye"></i>
-                                    <span>{{ article.views or 0 }}</span>
-                                </div>
-                                <div class="stat">
-                                    <i class="fas fa-heart"></i>
-                                    <span>{{ article.likes or 0 }}</span>
-                                </div>
-                            </div>
                             
                             <div class="article-date">
                                 {{ format_date(article.created_at) if format_date else 'Recent' }}
@@ -617,4 +572,34 @@
         </div>
     </section>
     {% endif %}
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="features-container">
+            <h2 class="section-title">Why Choose TeenBuzz?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h3 class="feature-title">Personalized Content</h3>
+                    <p class="feature-description">Get articles tailored to your interests and reading habits. Our AI learns what you care about most.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="feature-title">Real-Time Updates</h3>
+                    <p class="feature-description">Stay ahead with breaking news and trending topics that matter to your generation.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Safe & Reliable</h3>
+                    <p class="feature-description">Trusted sources and fact-checked content to keep you informed without the noise.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

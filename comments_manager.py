@@ -137,47 +137,7 @@ class CommentsManager:
         except Exception as e:
             return False, f"Error deleting comment: {str(e)}"
     
-    def toggle_comment_like(self, comment_id, user_id):
-        """Toggle like for a comment"""
-        try:
-            if not self.db:
-                return False, "Database connection failed"
-            
-            # Check if user already liked this comment
-            existing = self.db.select('comment_likes', 
-                                    where='comment_id = ? AND user_id = ?', 
-                                    params=(comment_id, user_id), 
-                                    limit=1)
-            
-            if existing:
-                # Unlike - remove the like
-                self.db.execute_query(
-                    "DELETE FROM comment_likes WHERE comment_id = ? AND user_id = ?",
-                    (comment_id, user_id)
-                )
-                # Decrement like count
-                self.db.execute_query(
-                    "UPDATE comments SET likes = likes - 1 WHERE id = ?",
-                    (comment_id,)
-                )
-                return True, "Comment unliked"
-            else:
-                # Like - add the like
-                like_data = {
-                    'comment_id': comment_id,
-                    'user_id': user_id,
-                    'created_at': datetime.now().isoformat()
-                }
-                self.db.insert('comment_likes', like_data)
-                # Increment like count
-                self.db.execute_query(
-                    "UPDATE comments SET likes = likes + 1 WHERE id = ?",
-                    (comment_id,)
-                )
-                return True, "Comment liked"
-                
-        except Exception as e:
-            return False, f"Error toggling comment like: {str(e)}"
+    # Like functionality removed - not needed
     
     def get_comment_stats(self, article_id):
         """Get comment statistics for an article"""

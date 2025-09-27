@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - TeenBuzz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .categories-container {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+    
+    .categories-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+        padding: 2rem 0;
+    }
+    
+    .back-button-container {
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+    
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        border: none;
+    }
+    
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    }
+    
+    .back-button i {
+        font-size: 0.9rem;
+    }
+    
+    .categories-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    
+    .categories-header p {
+        font-size: 1.2rem;
+        color: var(--text-gray);
+        margin-bottom: 0;
+        line-height: 1.5;
+    }
+
+    /* Filtered Articles Section (moved to top) */
+    .filtered-articles-section {
+        margin-bottom: 3rem;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-header p {
+        color: var(--text-gray);
+        font-size: 1.1rem;
+    }
+    
+    .articles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .article-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .article-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .article-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+    
+    .article-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .article-category {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .article-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .article-title a {
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .article-title a:hover {
+        color: var(--primary-blue);
+    }
+    
+    .article-excerpt {
+        color: var(--text-gray);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    .article-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-gray);
+    }
+    
+    .article-meta div {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Categories Grid - Modern Design */
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+        margin-top: 4rem;
+        padding: 2rem 0;
+    }
+    
+    .category-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .category-card:hover::before {
+        opacity: 1;
+    }
+    
+    .category-icon {
+        font-size: 3.5rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .category-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
+        line-height: 1.3;
+    }
+    
+    .category-count {
+        color: rgba(255,255,255,0.95);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.5px;
+    }
+    
+    .no-categories {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-gray);
+    }
+    
+    .no-categories i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--border-light);
+    }
+    
+    @media (max-width: 768px) {
+        .categories-container {
+            padding: 0 1rem;
+            margin: 2rem auto;
+        }
+        
+        .categories-header {
+            margin-bottom: 3rem;
+            padding: 1rem 0;
+        }
+        
+        .categories-header h1 {
+            font-size: 2.2rem;
+        }
+        
+        .categories-header p {
+            font-size: 1.1rem;
+        }
+        
+        .articles-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .categories-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1rem 0;
+        }
+        
+        .category-card {
+            padding: 2.5rem 2rem;
+            min-height: 180px;
+        }
+        
+        .category-icon {
+            font-size: 3rem;
+        }
+        
+        .category-title {
+            font-size: 1.4rem;
+        }
+        
+        .back-button-container {
+            position: static;
+            margin-bottom: 1.5rem;
+        }
+        
+        .back-button {
+            font-size: 0.9rem;
+            padding: 0.6rem 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="categories-container">
+    <div class="categories-header">
+        {% if selected_category %}
+        <div class="back-button-container">
+            <a href="{{ url_for('categories') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Categories
+            </a>
+        </div>
+        {% endif %}
+        <h1><i class="fas fa-th-large"></i> Categories</h1>
+        <p>Explore articles by category</p>
+    </div>
+
+    <!-- Filtered Articles Section (moved to top) -->
+    {% if selected_category %}
+    <div class="filtered-articles-section">
+        <div class="section-header">
+            <h2><i class="fas fa-newspaper"></i> Articles in {{ selected_category }}</h2>
+            <p>{{ filtered_articles|length }} articles found</p>
+        </div>
+        
+        <div class="articles-grid">
+            {% for article in filtered_articles %}
+            <div class="article-card">
+                <div class="article-category">{{ article.category }}</div>
+                <h3 class="article-title">
+                    <a href="{{ url_for('view_article', article_id=article.id) }}">{{ article.headline }}</a>
+                </h3>
+                <p class="article-excerpt">
+                    {{ article.content[:150] }}{% if article.content|length > 150 %}...{% endif %}
+                </p>
+                <div class="article-meta">
+                    <div class="article-date">
+                        <i class="fas fa-calendar"></i>
+                        {{ format_date(article.created_at) if format_date else 'Recent' }}
+                    </div>
+                    {% if article.source %}
+                    <div class="article-source">
+                        <i class="fas fa-newspaper"></i>
+                        {{ article.source }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Categories Display (when no specific category selected) -->
+    {% if not selected_category %}
+    <div class="categories-grid">
+        {% for category in categories %}
+        <div class="category-card" onclick="exploreCategory('{{ category.name }}')">
+            <div class="category-icon">
+                {% if category.name == 'Technology' %}
+                    <i class="fas fa-laptop-code"></i>
+                {% elif category.name == 'Environment' %}
+                    <i class="fas fa-leaf"></i>
+                {% elif category.name == 'Health' %}
+                    <i class="fas fa-heartbeat"></i>
+                {% elif category.name == 'Science' %}
+                    <i class="fas fa-flask"></i>
+                {% elif category.name == 'Social Issues' %}
+                    <i class="fas fa-users"></i>
+                {% elif category.name == 'Entertainment' %}
+                    <i class="fas fa-music"></i>
+                {% elif category.name == 'Sports' %}
+                    <i class="fas fa-football-ball"></i>
+                {% elif category.name == 'Education' %}
+                    <i class="fas fa-graduation-cap"></i>
+                {% elif category.name == 'Gaming' %}
+                    <i class="fas fa-gamepad"></i>
+                {% elif category.name == 'Music' %}
+                    <i class="fas fa-music"></i>
+                {% else %}
+                    <i class="fas fa-newspaper"></i>
+                {% endif %}
+            </div>
+            <h3 class="category-title">{{ category.name }}</h3>
+            <p class="category-count">{{ category.article_count }} articles</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+function exploreCategory(categoryName) {
+    // Navigate to categories page with filter
+    window.location.href = `{{ url_for('categories') }}?category=${encodeURIComponent(categoryName)}`;
+}
+</script>
+{% endblock %}

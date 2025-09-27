@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Preferences - TeenBuzz{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preferences-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .preferences-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .preferences-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .preferences-header p {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .preference-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--border-light);
+    }
+    
+    .preference-section {
+        margin-bottom: 2rem;
+    }
+    
+    .preference-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-light);
+    }
+    
+    .section-header h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+    
+    .section-header i {
+        font-size: 1.25rem;
+        color: var(--primary-blue);
+    }
+    
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .category-item {
+        position: relative;
+        background: var(--bg-light);
+        border: 2px solid var(--border-light);
+        border-radius: 12px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .category-item:hover {
+        border-color: var(--primary-blue);
+        background: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
+    }
+    
+    .category-item.checked {
+        border-color: var(--primary-blue);
+        background: var(--primary-light);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+    }
+    
+    .category-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--primary-blue);
+        cursor: pointer;
+    }
+    
+    .category-item label {
+        font-weight: 500;
+        color: var(--text-dark);
+        cursor: pointer;
+        flex: 1;
+        margin: 0;
+    }
+    
+    .topics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .topic-item {
+        position: relative;
+        background: var(--bg-light);
+        border: 2px solid var(--border-light);
+        border-radius: 8px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .topic-item:hover {
+        border-color: var(--secondary-blue);
+        background: var(--secondary-light);
+        transform: translateY(-1px);
+    }
+    
+    .topic-item.checked {
+        border-color: var(--secondary-blue);
+        background: var(--secondary-light);
+    }
+    
+    .topic-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--secondary-blue);
+        cursor: pointer;
+    }
+    
+    .topic-item label {
+        font-weight: 400;
+        color: var(--text-dark);
+        cursor: pointer;
+        flex: 1;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .save-section {
+        background: var(--bg-light);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .save-button {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 200px;
+        justify-content: center;
+    }
+    
+    .save-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+    }
+    
+    .save-button:active {
+        transform: translateY(0);
+    }
+    
+    .save-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .message {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .message.success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+    
+    .message.error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+    
+    .favorite-categories {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+        border: 2px solid var(--primary-blue);
+    }
+    
+    .favorite-categories .section-header {
+        color: var(--primary-blue);
+    }
+    
+    .favorite-categories .section-header i {
+        color: var(--primary-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="preferences-container">
+    <div class="preferences-header">
+        <h1>
+            <i class="fas fa-cog"></i>
+            Your Preferences
+        </h1>
+        <p>Customize your TeenBuzz experience by selecting your interests and favorite categories</p>
+    </div>
+
+    <!-- Messages -->
+    <div id="success-message" class="message success">
+        <i class="fas fa-check-circle"></i>
+        <span>Preferences saved successfully!</span>
+    </div>
+    
+    <div id="error-message" class="message error">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Error saving preferences. Please try again.</span>
+    </div>
+
+    <form id="preferences-form" method="POST" action="{{ url_for('update_preferences') }}">
+        <!-- Favorite Categories Section -->
+        <div class="preference-card favorite-categories">
+            <div class="preference-section">
+                <div class="section-header">
+                    <i class="fas fa-heart"></i>
+                    <h3>Favorite Categories</h3>
+                </div>
+                <div class="categories-grid" id="categories-container">
+                    {% for category in available_categories %}
+                    <div class="category-item" onclick="toggleCategory(this)">
+                        <input type="checkbox" 
+                               name="categories" 
+                               value="{{ category }}"
+                               id="cat_{{ loop.index }}"
+                               {% if category in user_preferences.categories %}checked{% endif %}>
+                        <label for="cat_{{ loop.index }}">{{ category }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Topics Section -->
+        <div class="preference-card">
+            <div class="preference-section">
+                <div class="section-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>Topics of Interest</h3>
+                </div>
+                <div class="topics-grid" id="topics-container">
+                    {% for topic in available_topics[:20] %}
+                    <div class="topic-item" onclick="toggleTopic(this)">
+                        <input type="checkbox" 
+                               name="topics" 
+                               value="{{ topic }}"
+                               id="topic_{{ loop.index }}"
+                               {% if topic in user_preferences.topics %}checked{% endif %}>
+                        <label for="topic_{{ loop.index }}">{{ topic.title() }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Section -->
+        <div class="save-section">
+            <button type="submit" class="save-button" id="save-btn">
+                <i class="fas fa-save"></i>
+                Save Preferences
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Toggle category selection
+function toggleCategory(item) {
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    updateItemStyle(item);
+}
+
+// Toggle topic selection
+function toggleTopic(item) {
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    updateItemStyle(item);
+    
+    // If topic is checked, move it to favorite categories
+    if (checkbox.checked) {
+        moveTopicToCategories(item);
+    } else {
+        moveTopicBackToTopics(item);
+    }
+}
+
+// Move checked topic to favorite categories
+function moveTopicToCategories(topicItem) {
+    const checkbox = topicItem.querySelector('input[type="checkbox"]');
+    const label = topicItem.querySelector('label');
+    
+    // Create new category item
+    const newCategoryItem = document.createElement('div');
+    newCategoryItem.className = 'category-item checked';
+    newCategoryItem.onclick = function() { toggleCategory(this); };
+    
+    // Create new checkbox
+    const newCheckbox = document.createElement('input');
+    newCheckbox.type = 'checkbox';
+    newCheckbox.name = 'categories';
+    newCheckbox.value = checkbox.value;
+    newCheckbox.checked = true;
+    newCheckbox.id = 'cat_' + Date.now();
+    
+    // Create new label
+    const newLabel = document.createElement('label');
+    newLabel.htmlFor = newCheckbox.id;
+    newLabel.textContent = label.textContent;
+    
+    // Assemble new item
+    newCategoryItem.appendChild(newCheckbox);
+    newCategoryItem.appendChild(newLabel);
+    
+    // Add to categories container
+    const categoriesContainer = document.getElementById('categories-container');
+    categoriesContainer.appendChild(newCategoryItem);
+    
+    // Hide original topic item
+    topicItem.style.display = 'none';
+    
+    // Track original item
+    newCategoryItem.setAttribute('data-original-topic', topicItem.id || 'topic_' + Date.now());
+}
+
+// Move topic back to topics section
+function moveTopicBackToTopics(topicItem) {
+    const checkbox = topicItem.querySelector('input[type="checkbox"]');
+    const value = checkbox.value;
+    
+    // Find and remove corresponding category item
+    const categoriesContainer = document.getElementById('categories-container');
+    const categoryItems = categoriesContainer.querySelectorAll('.category-item');
+    
+    categoryItems.forEach(categoryItem => {
+        const categoryCheckbox = categoryItem.querySelector('input[name="categories"]');
+        if (categoryCheckbox && categoryCheckbox.value === value) {
+            categoryItem.remove();
+        }
+    });
+    
+    // Show original topic item
+    topicItem.style.display = 'flex';
+}
+
+// Update visual style
+function updateItemStyle(item) {
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    if (checkbox.checked) {
+        item.classList.add('checked');
+    } else {
+        item.classList.remove('checked');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxItems = document.querySelectorAll('.category-item, .topic-item');
+    checkboxItems.forEach(updateItemStyle);
+    
+    // Move already checked topics to categories
+    const topicItems = document.querySelectorAll('#topics-container .topic-item');
+    topicItems.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox.checked) {
+            moveTopicToCategories(item);
+        }
+    });
+});
+
+// Handle form submission
+document.getElementById('preferences-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const categories = formData.getAll('categories');
+    const topics = formData.getAll('topics');
+    
+    console.log('Submitting:', { categories, topics });
+    
+    // Show loading state
+    const submitBtn = document.getElementById('save-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            showMessage('success');
+        } else {
+            showMessage('error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('error');
+    })
+    .finally(() => {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+function showMessage(type) {
+    const successMsg = document.getElementById('success-message');
+    const errorMsg = document.getElementById('error-message');
+    
+    // Hide both messages first
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    
+    // Show appropriate message
+    if (type === 'success') {
+        successMsg.style.display = 'flex';
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 3000);
+    } else {
+        errorMsg.style.display = 'flex';
+        setTimeout(() => {
+            errorMsg.style.display = 'none';
+        }, 5000);
+    }
+}
+</script>
+{% endblock %}

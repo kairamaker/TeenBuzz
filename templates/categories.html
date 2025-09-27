@@ -3,49 +3,6 @@
 {% block title %}Categories - TeenBuzz{% endblock %}
 
 {% block extra_css %}
-        .btn-primary {
-            background: var(--primary-blue);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 25px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .btn-primary:hover {
-            background: var(--secondary-blue);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--bg-light);
-            color: var(--text-dark);
-            padding: 0.75rem 1.5rem;
-            border: 2px solid var(--border-light);
-            border-radius: 25px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary-blue);
-            color: white;
-            border-color: var(--primary-blue);
-            transform: translateY(-1px);
-        }
-
-        /* Hero Section */
         .hero {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
             color: white;
@@ -66,21 +23,23 @@
             margin: 0 auto;
         }
 
-        /* Categories Grid */
         .categories-section {
             padding: 4rem 0;
+            background: var(--bg-light);
+        }
+
+        .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding-left: 2rem;
-            padding-right: 2rem;
+            padding: 0 2rem;
         }
 
         .section-title {
+            text-align: center;
             font-size: 2.5rem;
             font-weight: 700;
-            text-align: center;
-            margin-bottom: 3rem;
             color: var(--text-dark);
+            margin-bottom: 3rem;
         }
 
         .categories-grid {
@@ -94,8 +53,9 @@
             background: white;
             border-radius: 16px;
             padding: 2rem;
+            text-align: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             border: 1px solid var(--border-light);
         }
 
@@ -105,107 +65,49 @@
         }
 
         .category-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--accent-orange);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
             color: white;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
         }
 
         .category-title {
             font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 1rem;
             color: var(--text-dark);
+            margin-bottom: 1rem;
         }
 
         .category-description {
             color: var(--text-gray);
-            margin-bottom: 1.5rem;
             line-height: 1.6;
-        }
-
-        .category-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 1.5rem;
         }
 
-        .stat {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-blue);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-gray);
-        }
-
-        /* Articles Preview */
-        .articles-preview {
-            margin-top: 2rem;
-        }
-
-        .preview-title {
-            font-size: 1.1rem;
+        .explore-btn {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
             font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .article-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-light);
+        .explore-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-2px);
         }
 
-        .article-item:last-child {
-            border-bottom: none;
-        }
-
-        .article-thumbnail {
-            width: 60px;
-            height: 40px;
-            background: var(--bg-light);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            font-size: 0.8rem;
-        }
-
-        .article-info {
-            flex: 1;
-        }
-
-        .article-title {
-            font-weight: 500;
-            color: var(--text-dark);
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .article-meta {
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
@@ -216,7 +118,7 @@
             }
             
             .categories-section {
-                padding: 2rem 1rem;
+                padding: 2rem 0;
             }
             
             .section-title {
@@ -228,258 +130,84 @@
                 gap: 1.5rem;
             }
         }
-
-        /* Filtered Articles Section */
-        .filtered-articles-section {
-            padding: 4rem 0;
-            background: var(--bg-light);
-        }
-
-        .filtered-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .filtered-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 1rem;
-        }
-
-        .filtered-subtitle {
-            font-size: 1.1rem;
-            color: var(--text-gray);
-            margin-bottom: 2rem;
-        }
-
-        .filtered-articles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .filtered-article-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-            border: 1px solid var(--border-light);
-        }
-
-        .filtered-article-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Article image removed */
-
-        .filtered-article-card .article-content {
-            padding: 1.5rem;
-        }
-
-        .filtered-article-card .article-category {
-            display: inline-block;
-            background: var(--accent-orange);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .filtered-article-card .article-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            line-height: 1.4;
-        }
-
-        .filtered-article-card .article-title a {
-            color: var(--text-dark);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .filtered-article-card .article-title a:hover {
-            color: var(--primary-blue);
-        }
-
-        .filtered-article-card .article-excerpt {
-            color: var(--text-gray);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-
-        .filtered-article-card .article-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.9rem;
-            color: var(--text-gray);
-        }
-
-        .filtered-article-card .article-meta span {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .filtered-article-card .article-meta i {
-            font-size: 0.8rem;
-        }
-
-        /* Responsive for filtered articles */
-        @media (max-width: 768px) {
-            .filtered-articles-grid {
-                grid-template-columns: 1fr;
-                padding: 0 1rem;
-            }
-            
-            .filtered-title {
-                font-size: 2rem;
-            }
-        }
 {% endblock %}
 
 {% block content %}
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Explore by Category</h1>
-            <p>Discover articles organized by topics that matter to you. From technology to social issues, find content that speaks to your interests.</p>
+            <h1>Explore Categories</h1>
+            <p>Discover articles organized by topics that matter to you</p>
         </div>
     </section>
 
     <!-- Categories Section -->
     <section class="categories-section">
-        <h2 class="section-title">Browse Categories</h2>
-        
-        <div class="categories-grid">
-            {% for category in categories %}
-            <div class="category-card">
-                <div class="category-icon">
-                    {% if category.name == 'Technology' %}
-                        <i class="fas fa-laptop-code"></i>
-                    {% elif category.name == 'Environment' %}
-                        <i class="fas fa-leaf"></i>
-                    {% elif category.name == 'Health' %}
-                        <i class="fas fa-heartbeat"></i>
-                    {% elif category.name == 'Science' %}
-                        <i class="fas fa-flask"></i>
-                    {% elif category.name == 'Social Issues' %}
-                        <i class="fas fa-users"></i>
-                    {% else %}
-                        <i class="fas fa-newspaper"></i>
-                    {% endif %}
-                </div>
-                
-                <h3 class="category-title">{{ category.name }}</h3>
-                <p class="category-description">
-                    {% if category.name == 'Technology' %}
-                        Stay updated with the latest tech trends, AI developments, and digital innovations that are shaping our world.
-                    {% elif category.name == 'Environment' %}
-                        Learn about climate change, sustainability, and environmental activism that's making a real difference.
-                    {% elif category.name == 'Health' %}
-                        Discover mental health resources, wellness tips, and health information specifically for teenagers.
-                    {% elif category.name == 'Science' %}
-                        Explore fascinating scientific discoveries, space exploration, and breakthrough research.
-                    {% elif category.name == 'Social Issues' %}
-                        Engage with important social topics, activism, and issues that affect young people today.
-                    {% else %}
-                        Stay informed with the latest news and developments in this important area.
-                    {% endif %}
-                </p>
-                
-                <div class="category-stats">
-                    <div class="stat">
-                        <div class="stat-number">{{ category.article_count or 0 }}</div>
-                        <div class="stat-label">Articles</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">{{ category.views or 0 }}</div>
-                        <div class="stat-label">Views</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number">{{ category.likes or 0 }}</div>
-                        <div class="stat-label">Likes</div>
-                    </div>
-                </div>
-                
-                <a href="{{ url_for('categories') }}?category={{ category.name }}" class="btn-primary">
-                    <i class="fas fa-arrow-right"></i>
-                    Explore {{ category.name }}
-                </a>
-                
-                <!-- Recent Articles Preview -->
-                <div class="articles-preview">
-                    <h4 class="preview-title">Recent Articles</h4>
-                    {% for article in category.recent_articles[:3] %}
-                    <div class="article-item">
-                        <div class="article-thumbnail">
-                            <i class="fas fa-newspaper"></i>
-                        </div>
-                        <div class="article-info">
-                            <div class="article-title">{{ article.headline[:50] }}{% if article.headline|length > 50 %}...{% endif %}</div>
-                            <div class="article-meta">{{ article.views }} views • {{ article.likes }} likes</div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-
-    <!-- Filtered Articles Section -->
-    {% if selected_category and filtered_articles %}
-    <section class="filtered-articles-section">
         <div class="container">
-            <div class="filtered-header">
-                <h2 class="filtered-title">{{ selected_category }} Articles</h2>
-                <p class="filtered-subtitle">Showing {{ filtered_articles|length }} articles in {{ selected_category }}</p>
-                <a href="{{ url_for('categories') }}" class="btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to All Categories
-                </a>
-            </div>
+            <h2 class="section-title">Browse Categories</h2>
             
-            <div class="filtered-articles-grid">
-                {% for article in filtered_articles %}
-                <article class="filtered-article-card">
-                    <div class="article-content">
-                        <div class="article-category">{{ article.category }}</div>
-                        <h3 class="article-title">
-                            <a href="{{ url_for('view_article', article_id=article.id) }}">
-                                {{ article.headline }}
-                            </a>
-                        </h3>
-                        <p class="article-excerpt">
-                            {{ article.content[:150] }}{% if article.content|length > 150 %}...{% endif %}
-                        </p>
-                        <div class="article-meta">
-                            <span class="article-views">
-                                <i class="fas fa-eye"></i>
-                                {{ article.views or 0 }} views
-                            </span>
-                            <span class="article-likes">
-                                <i class="fas fa-heart"></i>
-                                {{ article.likes or 0 }} likes
-                            </span>
-                            <span class="article-date">
-                                <i class="fas fa-calendar"></i>
-                                {{ article.created_at[:10] if article.created_at else 'Recent' }}
-                            </span>
-                        </div>
+            <div class="categories-grid">
+                {% for category in categories %}
+                <div class="category-card">
+                    <div class="category-icon">
+                        {% if category.name == 'Technology' %}
+                            <i class="fas fa-laptop-code"></i>
+                        {% elif category.name == 'Environment' %}
+                            <i class="fas fa-leaf"></i>
+                        {% elif category.name == 'Health' %}
+                            <i class="fas fa-heartbeat"></i>
+                        {% elif category.name == 'Science' %}
+                            <i class="fas fa-flask"></i>
+                        {% elif category.name == 'Social Issues' %}
+                            <i class="fas fa-users"></i>
+                        {% elif category.name == 'Entertainment' %}
+                            <i class="fas fa-music"></i>
+                        {% elif category.name == 'Sports' %}
+                            <i class="fas fa-football-ball"></i>
+                        {% elif category.name == 'Education' %}
+                            <i class="fas fa-graduation-cap"></i>
+                        {% elif category.name == 'Gaming' %}
+                            <i class="fas fa-gamepad"></i>
+                        {% elif category.name == 'Music' %}
+                            <i class="fas fa-music"></i>
+                        {% else %}
+                            <i class="fas fa-newspaper"></i>
+                        {% endif %}
                     </div>
-                </article>
+                    
+                    <h3 class="category-title">{{ category.name }}</h3>
+                    <p class="category-description">
+                        {% if category.name == 'Technology' %}
+                            Latest tech trends and innovations
+                        {% elif category.name == 'Environment' %}
+                            Climate change and sustainability
+                        {% elif category.name == 'Health' %}
+                            Mental health and wellness for teens
+                        {% elif category.name == 'Science' %}
+                            Scientific discoveries and research
+                        {% elif category.name == 'Social Issues' %}
+                            Important social topics and activism
+                        {% elif category.name == 'Entertainment' %}
+                            Movies, music, and pop culture
+                        {% elif category.name == 'Sports' %}
+                            Sports news and updates
+                        {% elif category.name == 'Education' %}
+                            Learning and academic topics
+                        {% elif category.name == 'Gaming' %}
+                            Gaming news and reviews
+                        {% elif category.name == 'Music' %}
+                            Music trends and artists
+                        {% else %}
+                            Latest news and updates
+                        {% endif %}
+                    </p>
+                    
+                    <a href="{{ url_for('category_articles', category=category.name) }}" class="explore-btn">
+                        Explore {{ category.name }}
+                    </a>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </section>
-    {% endif %}
 {% endblock %}

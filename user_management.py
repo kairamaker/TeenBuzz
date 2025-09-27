@@ -223,13 +223,13 @@ class UserManager:
             return []
     
     def get_available_categories(self):
-        """Get all available categories"""
+        """Get all available categories from articles"""
         try:
-            categories = self._get_db().select('categories')
-            return [cat['name'] for cat in categories] if categories else []
+            categories = self._get_db().execute_query('SELECT DISTINCT category FROM articles WHERE category IS NOT NULL ORDER BY category')
+            return [cat['category'] for cat in categories] if categories else []
         except Exception as e:
             print(f"Error getting categories: {e}")
-            return ['Technology', 'Environment', 'Health', 'Science', 'Social Issues']
+            return ['Technology', 'Environment', 'Health', 'Science', 'Social Issues', 'Education', 'Entertainment', 'Gaming', 'Music', 'Sports']
     
     def get_available_topics(self):
         """Get all available topics from article tags"""
