@@ -59,26 +59,58 @@ def get_articles_from_db(limit=20):
         return []
 
 def enhanced_search_filter(articles, query):
-    """Enhanced search function that matches individual words in query"""
+    """Enhanced search function that matches individual words in query and news sources"""
     if not query:
         return articles
     
     query_lower = query.lower()
     query_words = query_lower.split()
     
+    # Common news source mappings for better search
+    news_source_mappings = {
+        'bbc': ['bbc', 'bbc news', 'bbc.com'],
+        'cnn': ['cnn', 'cnn.com'],
+        'reuters': ['reuters', 'reuters.com'],
+        'guardian': ['guardian', 'the guardian', 'theguardian.com'],
+        'wired': ['wired', 'wired.com'],
+        'techcrunch': ['techcrunch', 'techcrunch.com'],
+        'forbes': ['forbes', 'forbes.com'],
+        'nytimes': ['new york times', 'nytimes', 'nytimes.com'],
+        'washington post': ['washington post', 'wapo', 'washingtonpost.com'],
+        'npr': ['npr', 'npr.org'],
+        'ap': ['associated press', 'ap news', 'ap.org'],
+        'bloomberg': ['bloomberg', 'bloomberg.com'],
+        'wsj': ['wall street journal', 'wsj', 'wsj.com'],
+        'psychology today': ['psychology today', 'psychologytoday.com'],
+        'scientific american': ['scientific american', 'sciam', 'scientificamerican.com'],
+        'gamespot': ['gamespot', 'gamespot.com'],
+        'vogue': ['vogue', 'vogue.com'],
+        'rss': ['rss feed', 'rss', 'feed']
+    }
+    
     def article_matches_query(article):
         headline = (article.get('headline') or '').lower()
         content = (article.get('content') or '').lower()
         tags = (article.get('tags') or '').lower()
         category = (article.get('category') or '').lower()
+        source = (article.get('source') or '').lower()
         
-        # Check if any query word matches in headline, content, tags, or category
+        # Check if any query word matches in headline, content, tags, category, or source
         for word in query_words:
             if (word in headline or 
                 word in content or 
                 word in tags or 
-                word in category):
+                word in category or
+                word in source):
                 return True
+        
+        # Check for news source mappings
+        for search_term, source_variations in news_source_mappings.items():
+            if search_term in query_lower:
+                for variation in source_variations:
+                    if variation in source:
+                        return True
+        
         return False
     
     return [a for a in articles if article_matches_query(a)]
