@@ -1087,6 +1087,48 @@ def setup_database():
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
+@app.route('/create-admin')
+def create_admin():
+    """Create admin account - for Railway deployment"""
+    try:
+        import uuid
+        from datetime import datetime
+        
+        db = get_database()
+        if not db:
+            return "❌ Could not connect to database"
+        
+        # Check if admin already exists
+        existing_admin = db.select('users', where='username = ?', params=('admin',), limit=1)
+        if existing_admin:
+            return "✅ Admin account already exists"
+        
+        # Create admin user
+        admin_data = {
+            'id': str(uuid.uuid4()),
+            'username': 'admin',
+            'email': 'admin@teenbuzz.com',
+            'password_hash': auth_manager.hash_password('admin123'),
+            'is_admin': True,
+            'is_active': True,
+            'created_at': datetime.now().isoformat(),
+            'last_login': None
+        }
+        
+        # Insert admin user
+        db.insert('users', admin_data)
+        
+        return """
+        ✅ Admin account created successfully!<br><br>
+        👑 Username: <strong>admin</strong><br>
+        🔑 Password: <strong>admin123</strong><br><br>
+        ⚠️ <strong>Important:</strong> Change this password after first login!<br><br>
+        <a href="/login">Go to Login</a>
+        """
+        
+    except Exception as e:
+        return f"❌ Error creating admin: {str(e)}"
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5003))
