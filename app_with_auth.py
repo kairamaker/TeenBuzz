@@ -914,22 +914,15 @@ def preferences():
 @app.route('/update-profile', methods=['POST'])
 @login_required
 def update_profile():
-    """Update user profile information"""
+    """Update user profile information - username only"""
     try:
         user = get_current_user()
         
-        # Get form data
+        # Get form data - only username
         username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
         
-        if not username or not email:
-            flash('Please fill in all fields', 'error')
-            return redirect(url_for('user_profile') + '?tab=settings')
-        
-        # Validate email format
-        valid, msg = auth_manager.validate_email(email)
-        if not valid:
-            flash(msg, 'error')
+        if not username:
+            flash('Please enter a username', 'error')
             return redirect(url_for('user_profile') + '?tab=settings')
         
         # Validate username
@@ -938,21 +931,15 @@ def update_profile():
             flash(msg, 'error')
             return redirect(url_for('user_profile') + '?tab=settings')
         
-        # Check if username/email already exists (excluding current user)
+        # Check if username already exists (excluding current user)
         existing_user = local_db.select('users', where='username = ? AND id != ?', params=(username, user['id']), limit=1)
         if existing_user:
             flash('Username already exists', 'error')
             return redirect(url_for('user_profile') + '?tab=settings')
         
-        existing_email = local_db.select('users', where='email = ? AND id != ?', params=(email, user['id']), limit=1)
-        if existing_email:
-            flash('Email already exists', 'error')
-            return redirect(url_for('user_profile') + '?tab=settings')
-        
-        # Update profile
+        # Update profile - only username
         profile_data = {
-            'username': username,
-            'email': email
+            'username': username
         }
         
         success, message = user_manager.update_user_profile(user['id'], profile_data)
@@ -960,8 +947,7 @@ def update_profile():
         if success:
             # Update session
             session['username'] = username
-            session['email'] = email
-            flash(message, 'success')
+            flash('Username updated successfully!', 'success')
         else:
             flash(message, 'error')
         
