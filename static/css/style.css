@@ -19,6 +19,16 @@
     --border-radius: 16px;
     --border-radius-small: 10px;
     --transition: all 0.3s ease;
+    
+    /* Blue theme colors for modern design */
+    --primary-blue: #1e40af;
+    --secondary-blue: #3b82f6;
+    --accent-orange: #f97316;
+    --text-dark: #1f2937;
+    --text-gray: #6b7280;
+    --bg-white: #ffffff;
+    --bg-light: #f9fafb;
+    --border-light: #e5e7eb;
 }
 
 * {
