@@ -798,43 +798,31 @@ def admin_users():
 @app.route('/user-profile')
 @login_required
 def user_profile():
-    """Enhanced user profile page"""
+    """Simplified user profile page"""
     try:
         user = get_current_user()
-        user_profile = user_manager.get_user_profile(user['id'])
         
-        if not user_profile:
-            flash('Error loading user profile', 'error')
-            return redirect(url_for('home'))
-        
-        # Get recommended articles
-        recommended_articles = user_manager.get_recommended_articles(user['id'], limit=6)
-        
-        # Get available categories and topics
-        available_categories = user_manager.get_available_categories()
-        available_topics = user_manager.get_available_topics()
-        
-        # Convert comma-separated strings to lists for template
-        preferences = user_profile.get('preferences', {})
-        if preferences:
-            if 'categories' in preferences and preferences['categories']:
-                preferences['categories'] = [cat.strip() for cat in preferences['categories'].split(',')]
-            else:
-                preferences['categories'] = []
-            
-            if 'topics' in preferences and preferences['topics']:
-                preferences['topics'] = [topic.strip() for topic in preferences['topics'].split(',')]
-            else:
-                preferences['topics'] = []
+        # Simple profile data without complex queries
+        user_profile = {
+            'id': user['id'],
+            'username': user['username'],
+            'email': user.get('email', ''),
+            'created_at': user.get('created_at', ''),
+            'stats': {
+                'articles_read': 0,
+                'articles_liked': 0,
+                'comments_made': 0
+            }
+        }
         
         return render_template('profile_enhanced.html',
-                             user_stats=user_profile.get('stats', {}),
-                             user_preferences=preferences,
-                             recommended_articles=recommended_articles,
-                             available_categories=available_categories,
-                             available_topics=available_topics)
+                             user_stats=user_profile['stats'],
+                             user_preferences={'categories': [], 'topics': []},
+                             recommended_articles=[],
+                             available_categories=[],
+                             available_topics=[])
     except Exception as e:
-        flash(f'Error loading profile: {str(e)}', 'error')
+        print(f"Error in user_profile route: {e}")
         return redirect(url_for('home'))
 
 # Preferences route removed - simplified app

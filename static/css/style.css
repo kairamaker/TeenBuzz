@@ -42,11 +42,9 @@ body {
 
 /* Article Container Styles */
 .article-container {
-    max-width: 500px !important;
-    margin: 3rem auto !important;
-    padding: 0 6rem !important;
-    background-color: #ff0000 !important;
-    border: 5px solid #00ff00 !important;
+    max-width: 800px;
+    margin: 3rem auto;
+    padding: 0 2rem;
 }
 
 @media (max-width: 768px) {

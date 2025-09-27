@@ -5,9 +5,9 @@
 {% block extra_css %}
 <style>
     .categories-container {
-        max-width: 1200px;
+        max-width: 1000px;
         margin: 3rem auto;
-        padding: 0 2rem;
+        padding: 0 4rem;
     }
     
     .categories-header {
@@ -26,7 +26,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
         color: white;
         padding: 0.75rem 1.5rem;
         border-radius: 25px;
@@ -34,14 +34,14 @@
         font-weight: 600;
         font-size: 0.9rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
         border: none;
     }
     
     .back-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+        background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
     }
     
     .back-button i {
@@ -49,18 +49,20 @@
     }
     
     .categories-header h1 {
-        font-size: 3rem;
-        font-weight: 800;
+        font-size: 2.5rem;
+        font-weight: 600;
         color: var(--primary-blue);
         margin-bottom: 1rem;
         line-height: 1.2;
+        font-family: 'Inter', sans-serif;
     }
     
     .categories-header p {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: var(--text-gray);
         margin-bottom: 0;
         line-height: 1.5;
+        font-family: 'Inter', sans-serif;
     }
 
     /* Filtered Articles Section (moved to top) */
@@ -76,7 +78,7 @@
     .section-header h2 {
         font-size: 2.5rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -118,7 +120,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -133,7 +135,7 @@
     }
     
     .article-category {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
         color: white;
         padding: 0.5rem 1rem;
         border-radius: 25px;
@@ -141,7 +143,7 @@
         font-weight: 600;
         display: inline-block;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -185,79 +187,60 @@
     /* Categories Grid - Modern Design */
     .categories-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 2.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
         margin-top: 4rem;
-        padding: 2rem 0;
+        padding: 2rem 1rem;
     }
     
     .category-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 24px;
-        padding: 3rem 2.5rem;
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
         text-align: center;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border: none;
-        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    .category-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
     .category-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
-    }
-    
-    .category-card:hover::before {
-        opacity: 1;
-    }
-    
-    .category-icon {
-        font-size: 3.5rem;
-        color: white;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 3px 6px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        border-color: #3b82f6;
     }
     
     .category-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 1;
-        line-height: 1.3;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif;
     }
     
     .category-count {
-        color: rgba(255,255,255,0.95);
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        position: relative;
-        z-index: 1;
-        letter-spacing: 0.5px;
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .category-button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .category-button:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
     }
     
     .no-categories {
@@ -274,7 +257,7 @@
     
     @media (max-width: 768px) {
         .categories-container {
-            padding: 0 1rem;
+            padding: 0 2rem;
             margin: 2rem auto;
         }
         
@@ -339,9 +322,10 @@
                 Back to Categories
             </a>
         </div>
-        {% endif %}
+        {% else %}
         <h1><i class="fas fa-th-large"></i> Categories</h1>
         <p>Explore articles by category</p>
+        {% endif %}
     </div>
 
     <!-- Filtered Articles Section (moved to top) -->
@@ -384,34 +368,12 @@
     {% if not selected_category %}
     <div class="categories-grid">
         {% for category in categories %}
-        <div class="category-card" onclick="exploreCategory('{{ category.name }}')">
-            <div class="category-icon">
-                {% if category.name == 'Technology' %}
-                    <i class="fas fa-laptop-code"></i>
-                {% elif category.name == 'Environment' %}
-                    <i class="fas fa-leaf"></i>
-                {% elif category.name == 'Health' %}
-                    <i class="fas fa-heartbeat"></i>
-                {% elif category.name == 'Science' %}
-                    <i class="fas fa-flask"></i>
-                {% elif category.name == 'Social Issues' %}
-                    <i class="fas fa-users"></i>
-                {% elif category.name == 'Entertainment' %}
-                    <i class="fas fa-music"></i>
-                {% elif category.name == 'Sports' %}
-                    <i class="fas fa-football-ball"></i>
-                {% elif category.name == 'Education' %}
-                    <i class="fas fa-graduation-cap"></i>
-                {% elif category.name == 'Gaming' %}
-                    <i class="fas fa-gamepad"></i>
-                {% elif category.name == 'Music' %}
-                    <i class="fas fa-music"></i>
-                {% else %}
-                    <i class="fas fa-newspaper"></i>
-                {% endif %}
-            </div>
+        <div class="category-card">
             <h3 class="category-title">{{ category.name }}</h3>
             <p class="category-count">{{ category.article_count }} articles</p>
+            <button class="category-button" onclick="exploreCategory('{{ category.name }}')">
+                Explore {{ category.name }}
+            </button>
         </div>
         {% endfor %}
     </div>
