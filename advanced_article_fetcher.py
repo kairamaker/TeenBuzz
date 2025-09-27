@@ -188,8 +188,6 @@ Critical thinking and media literacy are essential skills for navigating today's
         "tags": ", ".join(keywords[:10]),  # Limit to 10 keywords
         "source": source,
         "url": url,
-        "views": random.randint(50, 1000),
-        "likes": random.randint(10, 200),
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat()
     }

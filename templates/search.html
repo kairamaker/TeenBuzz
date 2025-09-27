@@ -361,17 +361,6 @@
                         </p>
                         
                         <div class="article-meta">
-                            <div class="article-stats">
-                                <div class="stat">
-                                    <i class="fas fa-eye"></i>
-                                    <span>{{ article.views or 0 }}</span>
-                                </div>
-                                <div class="stat">
-                                    <i class="fas fa-heart"></i>
-                                    <span>{{ article.likes or 0 }}</span>
-                                </div>
-                            </div>
-                            
                             <div class="article-date">
                                 {{ format_date(article.created_at) if format_date else 'Recent' }}
                             </div>

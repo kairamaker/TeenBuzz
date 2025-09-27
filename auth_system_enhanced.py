@@ -61,8 +61,8 @@ class AuthManager:
         if len(username) > 20:
             return False, "Username must be less than 20 characters"
         
-        if not re.match(r'^[a-zA-Z0-9_]+$', username):
-            return False, "Username can only contain letters, numbers, and underscores"
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            return False, "Username can only contain letters and numbers"
         
         return True, "Username is valid"
     

@@ -38,7 +38,7 @@ class AuthManager:
         """Validate username format"""
         if len(username) < 3 or len(username) > 20:
             return False
-        pattern = r'^[a-zA-Z0-9_]+$'
+        pattern = r'^[a-zA-Z0-9]+$'
         return re.match(pattern, username) is not None
     
     def validate_password(self, password: str) -> tuple[bool, str]:
