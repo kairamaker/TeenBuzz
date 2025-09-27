@@ -93,7 +93,22 @@ def fetch_from_guardian():
     return []
 
 def create_enhanced_article(title, description, url, source, category=None):
-    """Create a full article with enhanced content"""
+    """Create a full article with enhanced content
+    
+    Args:
+        title: Article headline
+        description: Article description/summary
+        url: REQUIRED - Original article URL (must not be None or empty)
+        source: Article source/publication
+        category: Article category (auto-detected if not provided)
+    
+    Returns:
+        dict: Enhanced article with all required fields including URL
+    """
+    
+    # Validate required URL
+    if not url or url.strip() == '':
+        raise ValueError("URL is required for all articles - cannot be None or empty")
     
     # Generate enhanced content based on the title and description
     enhanced_content = f"{description}\n\n"
@@ -220,6 +235,11 @@ def add_articles_to_database(articles):
     
     for article in articles:
         try:
+            # Validate that article has required URL
+            if not article.get('url') or article.get('url').strip() == '':
+                print(f"❌ Skipping article without URL: {article['headline'][:50]}...")
+                continue
+            
             # Check if article already exists
             existing = db.select('articles', where='headline = ?', params=(article['headline'],), limit=1)
             if existing:

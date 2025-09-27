@@ -429,7 +429,7 @@
             .hero h1 {
                 font-size: 2.5rem;
             }
-            
+
             .hero p {
                 font-size: 1.1rem;
             }
@@ -520,7 +520,7 @@
                     View All
                 </a>
             </div>
-            
+
             <div class="articles-grid">
                 {% for article in articles[:6] %}
                 <article class="article-card">
@@ -566,40 +566,11 @@
                     <p class="for-you-excerpt">
                         {{ article.content[:100] }}{% if article.content|length > 100 %}...{% endif %}
                     </p>
-                </div>
+            </div>
                 {% endfor %}
             </div>
         </div>
     </section>
     {% endif %}
 
-    <!-- Features Section -->
-    <section class="features-section">
-        <div class="features-container">
-            <h2 class="section-title">Why Choose TeenBuzz?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <h3 class="feature-title">Personalized Content</h3>
-                    <p class="feature-description">Get articles tailored to your interests and reading habits. Our AI learns what you care about most.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3 class="feature-title">Real-Time Updates</h3>
-                    <p class="feature-description">Stay ahead with breaking news and trending topics that matter to your generation.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3 class="feature-title">Safe & Reliable</h3>
-                    <p class="feature-description">Trusted sources and fact-checked content to keep you informed without the noise.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 {% endblock %}
