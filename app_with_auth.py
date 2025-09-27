@@ -1056,6 +1056,37 @@ def api_fetch_new_articles():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/setup-database')
+def setup_database():
+    """Setup database with articles - for Railway deployment"""
+    try:
+        from advanced_article_fetcher import fetch_real_articles, add_articles_to_database
+        
+        # Check if articles already exist
+        db = get_database()
+        if db:
+            existing_articles = db.select('articles', limit=1)
+            if existing_articles:
+                return f"Database already has articles. Total articles: {len(db.select('articles'))}"
+        
+        # Fetch articles
+        print("📡 Fetching articles...")
+        articles = fetch_real_articles()
+        
+        if articles:
+            # Add to database
+            success = add_articles_to_database(articles)
+            
+            if success:
+                return f"✅ Successfully added {len(articles)} articles to database!"
+            else:
+                return "❌ Failed to add articles to database"
+        else:
+            return "❌ No articles fetched"
+            
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5003))
